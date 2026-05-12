@@ -81,16 +81,14 @@ export const authApi = {
   updateMe: (id: number, data: Partial<User>): Promise<AxiosResponse<User>> =>
     apiClient.patch(`/users/${id}/`, data),
   
-  // ✅ NOUVEAU : Changer le mot de passe
+  //  Changer le mot de passe
   changePassword: (id: number, data: { old_password: string; new_password: string }): Promise<AxiosResponse> =>
     apiClient.post(`/users/${id}/change_password/`, data),
   
-  // ✅ NOUVEAU : Supprimer le compte
   deleteAccount: (id: number): Promise<AxiosResponse<void>> =>
     apiClient.delete(`/users/${id}/`),
 }
 
-// ✅ NOUVEAU : Colombier API
 export const colombierApi = {
   getConfig: (): Promise<AxiosResponse<ColombierConfig>> => 
     apiClient.get('/colombier/config/'),
@@ -99,7 +97,7 @@ export const colombierApi = {
     apiClient.patch('/colombier/config/', data),
 }
 
-// ✅ NOUVEAU : Facturation API
+// : Facturation API
 export const billingApi = {
   getPlan: (): Promise<AxiosResponse<Plan>> => 
     apiClient.get('/billing/plan/'),
