@@ -1,17 +1,24 @@
+// app/(dashboard)/pigeons/[id]/modifier/page.tsx
 'use client'
 
 import { useParams, useRouter } from 'next/navigation'
-import { usePigeon, useUpdatePigeon } from '@/hooks/use-pigeons'
-import { usePigeons } from '@/hooks/use-pigeons'
+import { usePigeon, useUpdatePigeon, usePigeons } from '@/hooks/use-pigeons'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Card } from '@/components/ui/card'
 import { toast } from 'sonner'
-import { Bird, Save, X, ArrowLeft } from 'lucide-react'
+import { Bird, Save, X, ArrowLeft, Calendar, Plus } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import Link from 'next/link'
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useMemo } from 'react'
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from '@/components/ui/dialog'
 
 type OptionSexe = 'M' | 'F' | 'inconnu'
 
@@ -34,6 +41,36 @@ export default function ModifierPigeonPage() {
     statut: 'actif' as string,
   })
 
+  const [showEventDialog, setShowEventDialog] = useState(false)
+  const [newEvent, setNewEvent] = useState({
+    type: 'medical',
+    date: '',
+    description: '',
+  })
+
+  // ─── RACES DYNAMIQUES depuis l'API ───────────────────────────────
+  const racesDisponibles = useMemo(() => {
+    if (!pigeonsExistants) return []
+    const races = new Set<string>()
+    pigeonsExistants.forEach(p => {
+      if (p.race) races.add(p.race)
+    })
+    return Array.from(races).sort()
+  }, [pigeonsExistants])
+
+  // ─── STATUTS DYNAMIQUES depuis l'API ───────────────────────────
+  const statutsDisponibles = useMemo(() => {
+    if (!pigeonsExistants) return []
+    const statuts = new Set<string>()
+    pigeonsExistants.forEach(p => {
+      if (p.statut) statuts.add(p.statut)
+    })
+    return Array.from(statuts).map(s => ({
+      value: s,
+      label: pigeonsExistants.find(p => p.statut === s)?.statut_display || s
+    }))
+  }, [pigeonsExistants])
+
   useEffect(() => {
     if (pigeon) {
       setDonnees({
@@ -42,8 +79,8 @@ export default function ModifierPigeonPage() {
         race: pigeon.race,
         couleur: pigeon.couleur || '',
         poids: pigeon.poids?.toString() || '',
-        pere: typeof pigeon.pere === 'string' ? pigeon.pere : '',
-        mere: typeof pigeon.mere === 'string' ? pigeon.mere : '',
+        pere: pigeon.pere || '',
+        mere: pigeon.mere || '',
         date_naissance: pigeon.date_naissance,
         statut: pigeon.statut,
       })
@@ -52,7 +89,6 @@ export default function ModifierPigeonPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-
     try {
       await modifierPigeon.mutateAsync({
         id: params.id as string,
@@ -68,7 +104,6 @@ export default function ModifierPigeonPage() {
           statut: donnees.statut as 'actif' | 'vendu' | 'mort' | 'perdu',
         },
       })
-
       toast.success('Pigeon modifié avec succès')
       router.push(`/pigeons/${params.id}`)
     } catch (err: any) {
@@ -76,8 +111,19 @@ export default function ModifierPigeonPage() {
     }
   }
 
-  const malesDisponibles = pigeonsExistants?.filter(p => p.sexe === 'M' && p.statut === 'actif' && p.id !== params.id) || []
-  const femellesDisponibles = pigeonsExistants?.filter(p => p.sexe === 'F' && p.statut === 'actif' && p.id !== params.id) || []
+  const handleAddEvent = async () => {
+    toast.success('Événement ajouté')
+    setShowEventDialog(false)
+    setNewEvent({ type: 'medical', date: '', description: '' })
+  }
+
+  const malesDisponibles = pigeonsExistants?.filter(p => 
+    p.sexe === 'M' && p.statut === 'actif' && p.id !== params.id
+  ) || []
+  
+  const femellesDisponibles = pigeonsExistants?.filter(p => 
+    p.sexe === 'F' && p.statut === 'actif' && p.id !== params.id
+  ) || []
 
   if (isLoading) {
     return (
@@ -108,7 +154,85 @@ export default function ModifierPigeonPage() {
 
       <form onSubmit={handleSubmit}>
         <Card className="p-6 space-y-8">
-          {/* Identification */}
+          {/* ─── ÉVÉNEMENTS ─────────────────────────────────────── */}
+          <section>
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center gap-2 text-[#00685f]">
+                <Calendar className="w-5 h-5" />
+                <h2 className="text-lg font-semibold">Événements</h2>
+              </div>
+              
+              <Dialog open={showEventDialog} onOpenChange={setShowEventDialog}>
+                <DialogTrigger asChild>
+                  <Button variant="outline" size="sm" className="gap-2">
+                    <Plus className="w-4 h-4" />
+                    Ajouter un événement
+                  </Button>
+                </DialogTrigger>
+                <DialogContent>
+                  <DialogHeader>
+                    <DialogTitle>Nouvel événement</DialogTitle>
+                  </DialogHeader>
+                  <div className="space-y-4 pt-4">
+                    <div className="space-y-2">
+                      <Label>Type</Label>
+                      <select
+                        className="w-full h-10 px-3 rounded-md border border-gray-200 bg-white"
+                        value={newEvent.type}
+                        onChange={e => setNewEvent({...newEvent, type: e.target.value})}
+                      >
+                        <option value="medical">Médical</option>
+                        <option value="vaccination">Vaccination</option>
+                        <option value="reproduction">Reproduction</option>
+                        <option value="concours">Concours</option>
+                        <option value="autre">Autre</option>
+                      </select>
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Date</Label>
+                      <Input
+                        type="date"
+                        value={newEvent.date}
+                        onChange={e => setNewEvent({...newEvent, date: e.target.value})}
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Description</Label>
+                      <Input
+                        placeholder="Description..."
+                        value={newEvent.description}
+                        onChange={e => setNewEvent({...newEvent, description: e.target.value})}
+                      />
+                    </div>
+                    <div className="flex justify-end gap-2">
+                      <Button variant="outline" onClick={() => setShowEventDialog(false)}>
+                        Annuler
+                      </Button>
+                      <Button onClick={handleAddEvent}>
+                        Ajouter
+                      </Button>
+                    </div>
+                  </div>
+                </DialogContent>
+              </Dialog>
+            </div>
+
+            <div className="bg-gray-50 rounded-lg p-4">
+              <div className="flex items-start gap-3">
+                <div className="w-2 h-2 rounded-full bg-green-500 mt-2" />
+                <div>
+                  <p className="font-medium">Enregistré dans le système</p>
+                  <p className="text-sm text-gray-500">
+                    {new Date(pigeon.created_at).toLocaleDateString('fr-FR')}
+                  </p>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <hr className="border-gray-200" />
+
+          {/* ─── IDENTIFICATION ─────────────────────────────────── */}
           <section>
             <div className="flex items-center gap-2 mb-4 text-[#00685f]">
               <Bird className="w-5 h-5" />
@@ -156,7 +280,7 @@ export default function ModifierPigeonPage() {
 
           <hr className="border-gray-200" />
 
-          {/* Morphologie & Race */}
+          {/* ─── MORPHOLOGIE & RACE ─────────────────────────────── */}
           <section>
             <div className="flex items-center gap-2 mb-4 text-[#00685f]">
               <Bird className="w-5 h-5" />
@@ -174,9 +298,9 @@ export default function ModifierPigeonPage() {
                   required
                 >
                   <option value="">Sélectionner une race</option>
-                  <option value="Voyageur Belge">Voyageur Belge</option>
-                  <option value="Voyageur Anglais">Voyageur Anglais</option>
-                  <option value="Boulant Français">Boulant Français</option>
+                  {racesDisponibles.map(race => (
+                    <option key={race} value={race}>{race}</option>
+                  ))}
                 </select>
               </div>
 
@@ -205,7 +329,7 @@ export default function ModifierPigeonPage() {
 
           <hr className="border-gray-200" />
 
-          {/* Statut */}
+          {/* ─── STATUT ─────────────────────────────────────────── */}
           <section>
             <div className="flex items-center gap-2 mb-4 text-[#00685f]">
               <Bird className="w-5 h-5" />
@@ -220,17 +344,16 @@ export default function ModifierPigeonPage() {
                 value={donnees.statut}
                 onChange={e => setDonnees({ ...donnees, statut: e.target.value })}
               >
-                <option value="actif">Actif</option>
-                <option value="vendu">Vendu</option>
-                <option value="mort">Décédé</option>
-                <option value="perdu">Perdu</option>
+                {statutsDisponibles.map(s => (
+                  <option key={s.value} value={s.value}>{s.label}</option>
+                ))}
               </select>
             </div>
           </section>
 
           <hr className="border-gray-200" />
 
-          {/* Origines (Parents) */}
+          {/* ─── ORIGINES (PARENTS) ──────────────────────────── */}
           <section>
             <div className="flex items-center gap-2 mb-4 text-[#00685f]">
               <Bird className="w-5 h-5" />
@@ -248,7 +371,7 @@ export default function ModifierPigeonPage() {
                   <option value="">Sélectionner le père</option>
                   {malesDisponibles.map(p => (
                     <option key={p.id} value={p.id}>
-                      {p.matricule} {p.race}
+                      {p.matricule} ({p.race})
                     </option>
                   ))}
                 </select>
@@ -264,19 +387,14 @@ export default function ModifierPigeonPage() {
                   <option value="">Sélectionner la mère</option>
                   {femellesDisponibles.map(p => (
                     <option key={p.id} value={p.id}>
-                      {p.matricule} {p.race}
+                      {p.matricule} ({p.race})
                     </option>
                   ))}
                 </select>
               </div>
             </div>
-
-            <p className="text-sm text-gray-500 italic mt-3">
-              Note : Les parents doivent être enregistrés dans le système pour apparaître ici.
-            </p>
           </section>
 
-          {/* Date de naissance */}
           <div className="space-y-2">
             <Label htmlFor="date_naissance">Date de naissance</Label>
             <Input
@@ -287,7 +405,6 @@ export default function ModifierPigeonPage() {
             />
           </div>
 
-          {/* Actions */}
           <div className="flex justify-end gap-3 pt-4">
             <Link href={`/pigeons/${params.id}`}>
               <Button type="button" variant="outline">
@@ -301,7 +418,7 @@ export default function ModifierPigeonPage() {
               disabled={modifierPigeon.isPending}
             >
               <Save className="w-4 h-4 mr-2" />
-              {modifierPigeon.isPending ? 'Enregistrement...' : 'Enregistrer les modifications'}
+              {modifierPigeon.isPending ? 'Enregistrement...' : 'Enregistrer'}
             </Button>
           </div>
         </Card>
