@@ -101,7 +101,7 @@ const router = useRouter()
 
   const handleVoirHistorique = () => {
     if (selectedCage) {
-      router.push(`/dashboard/cages/${selectedCage}/historique`)
+      router.push(`/cages/${selectedCage}/historique`)
       handleClose()
     }
   }
