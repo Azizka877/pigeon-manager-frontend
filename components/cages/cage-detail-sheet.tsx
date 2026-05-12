@@ -42,7 +42,7 @@ import { toast } from 'sonner'
 import { cn } from '@/lib/utils'
 import { getPigeonImage } from '@/lib/pigeon-images'
 import { HistoriqueItem } from '@/types'
-
+import { useRouter } from 'next/navigation'
 
 
 export function CageDetailSheet() {
@@ -58,7 +58,7 @@ const { data: historiqueAPI } = useCageHistory(selectedCage || '')
   const [selectedCouple, setSelectedCouple] = useState('')
   const [showAffecterPigeon, setShowAffecterPigeon] = useState(false)
   const [showAffecterCouple, setShowAffecterCouple] = useState(false)
-
+const router = useRouter()
   const isOpen = !!selectedCage
 
   const handleClose = () => {
@@ -98,6 +98,13 @@ const { data: historiqueAPI } = useCageHistory(selectedCage || '')
     return couples.filter((c) => c.statut === 'actif' && !couplesEnCage.has(c.id))
   }, [couples, allCages])
 
+
+  const handleVoirHistorique = () => {
+    if (selectedCage) {
+      router.push(`/dashboard/cages/${selectedCage}/historique`)
+      handleClose()
+    }
+  }
   // ─── HISTORIQUE MOCK (à remplacer par vraie API) ──────────────────
    const historique = useMemo(() => {
   const items: HistoriqueItem[] = []
@@ -347,10 +354,13 @@ const { data: historiqueAPI } = useCageHistory(selectedCage || '')
                     </div>
                   ))}
                 </div>
-                <button className="text-blue-500 text-sm font-medium hover:text-blue-600 flex items-center gap-1">
-                  Voir tout l'historique
-                  <ChevronRight className="w-4 h-4" />
-                </button>
+                <button 
+                 onClick={handleVoirHistorique}
+                 className="text-blue-500 text-sm font-medium hover:text-blue-600 flex items-center gap-1"
+               >
+                 Voir tout l'historique
+                 <ChevronRight className="w-4 h-4" />
+               </button>
               </div>
 
               {/* ═══ SECTION: ACTIONS ═════════════════════════════════ */}
@@ -467,10 +477,13 @@ const { data: historiqueAPI } = useCageHistory(selectedCage || '')
                   )}
 
                   {/* VOIR HISTORIQUE COMPLET */}
-                  <button className="w-full flex items-center justify-center gap-2 py-3 px-4 rounded-xl border-2 border-gray-300 text-gray-600 font-medium hover:bg-gray-50 transition-colors">
-                    <FileText className="w-5 h-5" />
-                    Voir historique complet
-                  </button>
+                  <button 
+                       onClick={handleVoirHistorique}
+                       className="w-full flex items-center justify-center gap-2 py-3 px-4 rounded-xl border-2 border-gray-300 text-gray-600 font-medium hover:bg-gray-50 transition-colors"
+                       >
+                        <FileText className="w-5 h-5" />
+                          Voir historique complet
+                    </button>
                 </div>
               </div>
 
