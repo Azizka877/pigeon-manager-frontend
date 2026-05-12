@@ -1,16 +1,16 @@
+// app/dashboard/cages/page.tsx
 'use client'
 
 import { useCages } from '@/hooks/use-cages'
 import { useCageStore } from '@/stores/cage-store'
 import { CageCard } from '@/components/cages/cage-card'
-import { CageDetailPanel } from '@/components/cages/cage-detail-panel'
+import { CageDetailSheet } from '@/components/cages/cage-detail-sheet'
 import { CageFilters } from '@/components/cages/cage-filters'
 import { Skeleton } from '@/components/ui/skeleton'
-import { cn } from '@/lib/utils'
 
 export default function CagesPage() {
   const { data: cages, isLoading } = useCages()
-  const { selectedCage, filterStatus } = useCageStore()
+  const { filterStatus } = useCageStore()
 
   const filteredCages = cages?.filter((cage) => {
     switch (filterStatus) {
@@ -23,42 +23,50 @@ export default function CagesPage() {
 
   return (
     <div className="space-y-6">
+      {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold text-on-surface">Volière</h1>
-          <p className="text-on-surface-variant mt-1">Visualisation des cages et occupants</p>
+          <h1 className="text-3xl font-bold text-gray-900">Volière</h1>
+          <p className="text-gray-500 mt-1">Visualisation des cages et occupants</p>
         </div>
         <CageFilters />
       </div>
 
-      <div className="flex gap-6">
-        {/* Grille */}
-        <div className={cn(
-          "grid gap-3 transition-all duration-300 flex-1",
-          selectedCage
-            ? "grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5"
-            : "grid-cols-2 sm:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6"
-        )}>
-          {isLoading ? (
-            Array.from({ length: 20 }).map((_, i) => (
-              <Skeleton key={i} className="aspect-square rounded-xl" />
-            ))
-          ) : (
-            filteredCages?.map((cage) => (
-              <CageCard
-                key={cage.id}
-                cage={cage}
-                isSelected={selectedCage === cage.id}
-              />
-            ))
-          )}
+      {/* Légende */}
+      <div className="flex flex-wrap items-center gap-4 text-sm">
+        <div className="flex items-center gap-2">
+          <div className="w-3 h-3 rounded-full bg-green-500" />
+          <span className="text-gray-600">Libre</span>
         </div>
+        <div className="flex items-center gap-2">
+          <div className="w-3 h-3 rounded-full bg-red-500" />
+          <span className="text-gray-600">Occupée (1 pigeon)</span>
+        </div>
+        <div className="flex items-center gap-2">
+          <div className="w-3 h-3 rounded-full bg-orange-500" />
+          <span className="text-gray-600">Couple (2 pigeons)</span>
+        </div>
+      </div>
 
-        {/* Panel détail */}
-        {selectedCage && (
-          <CageDetailPanel cageId={selectedCage} />
+      {/* Grille - toujours pleine largeur */}
+      <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3">
+        {isLoading ? (
+          Array.from({ length: 20 }).map((_, i) => (
+            <Skeleton key={i} className="aspect-square rounded-xl" />
+          ))
+        ) : (
+          filteredCages?.map((cage) => (
+            <CageCard
+              key={cage.id}
+              cage={cage}
+              isSelected={false} // Plus besoin, géré par le Sheet
+            />
+          ))
         )}
       </div>
+
+      {/* Sheet coulissant (affiché quand selectedCage !== null) */}
+      <CageDetailSheet />
     </div>
   )
 }
