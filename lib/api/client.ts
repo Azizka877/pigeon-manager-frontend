@@ -1,9 +1,10 @@
 // lib/api/client.ts
 import axios, { AxiosResponse } from 'axios'
-import type { TokenResponse, User, Cage, PaginatedResponse, Pigeon, Couple, Reproduction, Sortie } from '@/types'
+import type { TokenResponse, User, Cage, PaginatedResponse, Pigeon, Couple,
+   Reproduction, Sortie , ColombierConfig, Plan, Invoice } from '@/types'
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api'
-
+console.log('API_URL:', API_URL)
 const apiClient = axios.create({
   baseURL: API_URL,
   headers: {
@@ -61,7 +62,9 @@ apiClient.interceptors.response.use(
   }
 )
 
-// Auth API
+// lib/api/client.ts — AJOUTER ces endpoints
+
+// Auth API — COMPLET
 export const authApi = {
   login: (username: string, password: string): Promise<AxiosResponse<TokenResponse>> =>
     apiClient.post('/token/', { username, password }),
@@ -72,7 +75,37 @@ export const authApi = {
   verify: (token: string): Promise<AxiosResponse> =>
     apiClient.post('/token/verify/', { token }),
   
-  getMe: (): Promise<AxiosResponse<User>> => apiClient.get('/users/me/'),
+  getMe: (): Promise<AxiosResponse<User>> => 
+    apiClient.get('/users/me/'),
+  
+  updateMe: (id: number, data: Partial<User>): Promise<AxiosResponse<User>> =>
+    apiClient.patch(`/users/${id}/`, data),
+  
+  // ✅ NOUVEAU : Changer le mot de passe
+  changePassword: (id: number, data: { old_password: string; new_password: string }): Promise<AxiosResponse> =>
+    apiClient.post(`/users/${id}/change_password/`, data),
+  
+  // ✅ NOUVEAU : Supprimer le compte
+  deleteAccount: (id: number): Promise<AxiosResponse<void>> =>
+    apiClient.delete(`/users/${id}/`),
+}
+
+// ✅ NOUVEAU : Colombier API
+export const colombierApi = {
+  getConfig: (): Promise<AxiosResponse<ColombierConfig>> => 
+    apiClient.get('/colombier/config/'),
+  
+  updateConfig: (data: Partial<ColombierConfig>): Promise<AxiosResponse<ColombierConfig>> =>
+    apiClient.patch('/colombier/config/', data),
+}
+
+// ✅ NOUVEAU : Facturation API
+export const billingApi = {
+  getPlan: (): Promise<AxiosResponse<Plan>> => 
+    apiClient.get('/billing/plan/'),
+  
+  getInvoices: (): Promise<AxiosResponse<PaginatedResponse<Invoice>>> =>
+    apiClient.get('/billing/invoices/'),
 }
 
 // Pigeons API

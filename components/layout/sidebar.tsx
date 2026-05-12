@@ -15,6 +15,7 @@ import {
   LogOut,
   Menu,
   X,
+  User
 } from 'lucide-react'
 
 const navItems = [
@@ -24,11 +25,12 @@ const navItems = [
   { href: '/couples', label: 'Couples', icon: Heart },
   { href: '/reproductions', label: 'Reproductions', icon: Egg },
   { href: '/sales', label: 'Sorties', icon: ArrowUpRight },
+  { href: '/profile', label: 'Profil', icon: User }, 
 ]
 
 export function Sidebar() {
   const pathname = usePathname()
-  const { user, logout } = useAuthStore()
+  const { user, logout, isAuthenticated } = useAuthStore()
   const { sidebarOpen, setSidebarOpen } = useUIStore()
 
   const NavContent = () => (
@@ -43,18 +45,20 @@ export function Sidebar() {
         </div>
       </div>
 
-      {/* User */}
-      <div className="px-6 mb-6 flex items-center gap-3">
-        <div className="w-10 h-10 rounded-full bg-surface-container-high flex items-center justify-center">
-          <span className="text-sm font-semibold text-primary">
-            {user?.username?.charAt(0).toUpperCase() || 'U'}
-          </span>
+      {/* User - affiché seulement si connecté */}
+      {isAuthenticated && user && (
+        <div className="px-6 mb-6 flex items-center gap-3">
+          <div className="w-10 h-10 rounded-full bg-surface-container-high flex items-center justify-center">
+            <span className="text-sm font-semibold text-primary">
+              {user.username?.charAt(0).toUpperCase() || 'U'}
+            </span>
+          </div>
+          <div>
+            <p className="text-sm font-medium text-on-surface">{user.username || 'Utilisateur'}</p>
+            <p className="text-xs text-on-surface-variant">Éleveur</p>
+          </div>
         </div>
-        <div>
-          <p className="text-sm font-medium text-on-surface">{user?.username || 'Utilisateur'}</p>
-          <p className="text-xs text-on-surface-variant">Éleveur</p>
-        </div>
-      </div>
+      )}
 
       {/* Navigation */}
       <nav className="flex-1 px-3 space-y-1">
@@ -80,22 +84,23 @@ export function Sidebar() {
         })}
       </nav>
 
-      {/* Logout */}
-      <div className="p-3 mt-auto">
-        <button
-          onClick={logout}
-          className="flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium text-on-surface-variant hover:bg-error-container hover:text-destructive transition-all w-full"
-        >
-          <LogOut className="w-5 h-5" />
-          Déconnexion
-        </button>
-      </div>
+      {/* Logout - affiché seulement si connecté */}
+      {isAuthenticated && (
+        <div className="p-3 mt-auto">
+          <button
+            onClick={logout}
+            className="flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium text-on-surface-variant hover:bg-error-container hover:text-destructive transition-all w-full"
+          >
+            <LogOut className="w-5 h-5" />
+            Déconnexion
+          </button>
+        </div>
+      )}
     </>
   )
 
   return (
     <>
-      {/* Mobile overlay */}
       {sidebarOpen && (
         <div
           className="fixed inset-0 bg-black/50 z-40 md:hidden"
@@ -103,7 +108,6 @@ export function Sidebar() {
         />
       )}
 
-      {/* Mobile toggle */}
       <button
         onClick={() => setSidebarOpen(!sidebarOpen)}
         className="fixed top-4 left-4 z-50 p-2 rounded-lg bg-surface shadow-md md:hidden"
@@ -111,12 +115,10 @@ export function Sidebar() {
         {sidebarOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
       </button>
 
-      {/* Sidebar desktop */}
       <aside className="hidden md:flex flex-col w-72 h-screen bg-surface-container-low border-r border-outline-variant fixed left-0 top-0 z-30">
         <NavContent />
       </aside>
 
-      {/* Sidebar mobile */}
       <aside
         className={cn(
           'flex flex-col w-72 h-screen bg-surface-container-low border-r border-outline-variant fixed left-0 top-0 z-50 transition-transform md:hidden',

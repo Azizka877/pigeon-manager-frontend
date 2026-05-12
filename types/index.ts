@@ -102,6 +102,48 @@ export interface Sortie {
   circonstances: string | null
   notes: string | null
   created_at: string
+  
 }
+
+
+export interface ColombierConfig {
+  id: number
+  nom: string
+  pays: string
+  ville: string
+  gps: string | null
+  proprietaire: number
+  created_at: string
+  updated_at: string
+}
+
+export interface Plan {
+  id: number
+  nom: string
+  description: string
+  prix_mensuel: number
+  actif: boolean
+  date_debut: string
+  date_fin: string | null
+}
+
+export interface Invoice {
+  id: number
+  numero: string
+  date: string
+  montant: number
+  statut: 'payee' | 'en_attente' | 'annulee'
+  pdf_url: string | null
+}
+
+// ═══════════════════════════════════════════════════════════
+// TYPES POUR LES RÉPONSES API SPÉCIFIQUES
+// ═══════════════════════════════════════════════════════════
+
+export interface CagesApiResponse extends PaginatedResponse<Cage> {}
+export interface PigeonsApiResponse extends PaginatedResponse<Pigeon> {}
+export interface CouplesApiResponse extends PaginatedResponse<Couple> {}
+export interface ReproductionsApiResponse extends PaginatedResponse<Reproduction> {}
+export interface SortiesApiResponse extends PaginatedResponse<Sortie> {}
 // Réponse API pour les cages
 export interface CagesApiResponse extends PaginatedResponse<Cage> {}

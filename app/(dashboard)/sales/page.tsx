@@ -98,7 +98,7 @@ export default function SortiesPage() {
           <h1 className="text-3xl font-bold text-gray-900">Historique des sorties</h1>
           <p className="text-gray-500 mt-1">Gérez et consultez toutes les sorties de pigeons : ventes, pertes et décès.</p>
         </div>
-        <Link href="/sorties/new">
+        <Link href="/sales/new">
           <Button className="bg-[#00685f] hover:bg-[#00554d] text-white gap-2">
             <Plus className="w-4 h-4" />
             Enregistrer une sortie
