@@ -2,6 +2,7 @@
 'use client'
 
 import { useCageStore } from '@/stores/cage-store'
+import { useCageHistory } from '@/hooks/use-cage-history'
 import { useCage, useCages, useLibererCage, useOccuperCage } from '@/hooks/use-cages'
 import { usePigeons } from '@/hooks/use-pigeons'
 import { useCouples } from '@/hooks/use-couples'
@@ -40,13 +41,9 @@ import { useState, useMemo } from 'react'
 import { toast } from 'sonner'
 import { cn } from '@/lib/utils'
 import { getPigeonImage } from '@/lib/pigeon-images'
+import { HistoriqueItem } from '@/types'
 
-// ─── Types pour l'historique ──────────────────────────────────────
-interface HistoriqueItem {
-  date: string
-  action: string
-  icone?: 'clock' | 'dot'
-}
+
 
 export function CageDetailSheet() {
   const { selectedCage, setSelectedCage } = useCageStore()
@@ -56,7 +53,7 @@ export function CageDetailSheet() {
   const { data: couples } = useCouples()
   const libererMutation = useLibererCage()
   const occuperMutation = useOccuperCage()
-
+const { data: historiqueAPI } = useCageHistory(selectedCage || '')
   const [selectedPigeon, setSelectedPigeon] = useState('')
   const [selectedCouple, setSelectedCouple] = useState('')
   const [showAffecterPigeon, setShowAffecterPigeon] = useState(false)
@@ -102,22 +99,36 @@ export function CageDetailSheet() {
   }, [couples, allCages])
 
   // ─── HISTORIQUE MOCK (à remplacer par vraie API) ──────────────────
-  const historique: HistoriqueItem[] = useMemo(() => {
-    const items: HistoriqueItem[] = []
-    if (cage?.occupation_actuelle?.date_debut) {
-      items.push({
-        date: new Date(cage.occupation_actuelle.date_debut).toLocaleDateString('fr-FR'),
-        action: cage.occupation_actuelle.type === 'couple' ? 'Couple affecté' : 'Pigeon affecté',
-        icone: 'clock',
-      })
-    }
+   const historique = useMemo(() => {
+  const items: HistoriqueItem[] = []
+  
+  // Occupation actuelle
+  if (cage?.occupation_actuelle?.date_debut) {
     items.push({
-      date: '05/02/2025',
-      action: 'Cage nettoyée',
-      icone: 'dot',
+      id: 'current',
+      type_action: 'occupation',
+      description: cage.occupation_actuelle.type === 'couple' 
+        ? 'Couple affecté' 
+        : 'Pigeon affecté',
+      date_action: cage.occupation_actuelle.date_debut,
+      date_formatee: new Date(cage.occupation_actuelle.date_debut).toLocaleDateString('fr-FR'),
+      utilisateur_nom: '',
+      metadata: {},
     })
-    return items
-  }, [cage])
+  }
+  
+  // Historique depuis l'API
+  if (historiqueAPI) {
+    items.push(...historiqueAPI)
+  }
+  
+  return items.sort((a, b) => 
+    new Date(b.date_action).getTime() - new Date(a.date_action).getTime()
+  )
+}, [cage, historiqueAPI])
+
+
+
 
   const handleLiberer = async () => {
     if (!selectedCage) return
@@ -325,13 +336,13 @@ export function CageDetailSheet() {
                 <div className="space-y-2">
                   {historique.map((item, index) => (
                     <div key={index} className="flex items-start gap-2 text-sm">
-                      {item.icone === 'clock' ? (
+                      {item.type_action === 'occupation' ? (
                         <Clock className="w-4 h-4 text-gray-400 mt-0.5 flex-shrink-0" />
                       ) : (
                         <span className="w-1.5 h-1.5 rounded-full bg-gray-400 mt-2 flex-shrink-0" />
                       )}
                       <span className="text-gray-600">
-                        <span className="font-medium">{item.date}</span> : {item.action}
+                        <span className="font-medium">{item.date_formatee}</span> : {item.description}
                       </span>
                     </div>
                   ))}
