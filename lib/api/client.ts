@@ -2,9 +2,9 @@
 import axios, { AxiosResponse } from 'axios'
 import type { TokenResponse, User, Cage, PaginatedResponse, Pigeon, Couple,
    Reproduction, Sortie , ColombierConfig, Plan, Invoice } from '@/types'
-
+import type { HistoriqueItem } from '@/types'
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api'
-console.log('API_URL:', API_URL)
+
 const apiClient = axios.create({
   baseURL: API_URL,
   headers: {
@@ -140,6 +140,8 @@ export const couplesApi = {
   delete: (id: string): Promise<AxiosResponse<void>> => apiClient.delete(`/couples/${id}/`),
 }
 
+
+
 // ✅ AJOUTER SORTIES API
 export const sortiesApi = {
   list: (): Promise<AxiosResponse<PaginatedResponse<Sortie>>> => apiClient.get('/sorties/'),
@@ -156,6 +158,14 @@ export const reproductionsApi = {
   get: (id: string): Promise<AxiosResponse<Reproduction>> => apiClient.get(`/reproductions/${id}/`),
   update: (id: string, data: Partial<Reproduction>): Promise<AxiosResponse<Reproduction>> => apiClient.put(`/reproductions/${id}/`, data),
   delete: (id: string): Promise<AxiosResponse<void>> => apiClient.delete(`/reproductions/${id}/`),
+}
+
+export const historiqueApi = {
+  list: (cageId: string): Promise<AxiosResponse<HistoriqueItem[]>> => 
+    apiClient.get(`/cages/${cageId}/historique/`),
+  
+  create: (cageId: string, data: Partial<HistoriqueItem>): Promise<AxiosResponse<HistoriqueItem>> => 
+    apiClient.post(`/cages/${cageId}/historique/`, data),
 }
 
 export default apiClient

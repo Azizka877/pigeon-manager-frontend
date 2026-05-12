@@ -136,6 +136,18 @@ export interface Invoice {
   pdf_url: string | null
 }
 
+
+// types/index.ts
+// types/index.ts
+export interface HistoriqueItem {
+  id: string
+  type_action: 'occupation' | 'liberation' | 'nettoyage' | 'creation' | 'modification'
+  description: string
+  date_action: string
+  date_formatee: string
+  utilisateur_nom: string
+  metadata: Record<string, any>
+}
 // ═══════════════════════════════════════════════════════════
 // TYPES POUR LES RÉPONSES API SPÉCIFIQUES
 // ═══════════════════════════════════════════════════════════
