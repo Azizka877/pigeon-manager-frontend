@@ -18,6 +18,17 @@ export interface Pigeon {
   updated_at: string
 }
 
+export interface PigeonEvent {
+  id: string
+  pigeon: string
+  type: 'medical' | 'vaccination' | 'reproduction' | 'concours' | 'autre'
+  date: string
+  description: string
+  created_at: string
+}
+
+
+
 export interface Couple {
   id: string
   male: string                    // ← ID du mâle (string)

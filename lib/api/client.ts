@@ -1,7 +1,8 @@
 // lib/api/client.ts
 import axios, { AxiosResponse } from 'axios'
 import type { TokenResponse, User, Cage, PaginatedResponse, Pigeon, Couple,
-   Reproduction, Sortie , ColombierConfig, Plan, Invoice } from '@/types'
+   Reproduction, Sortie , ColombierConfig, Plan, Invoice, 
+   PigeonEvent} from '@/types'
 import type { HistoriqueItem } from '@/types'
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api'
 
@@ -114,6 +115,13 @@ export const pigeonsApi = {
   update: (id: string, data: Partial<Pigeon>): Promise<AxiosResponse<Pigeon>> => apiClient.put(`/pigeons/${id}/`, data),
   partialUpdate: (id: string, data: Partial<Pigeon>): Promise<AxiosResponse<Pigeon>> => apiClient.patch(`/pigeons/${id}/`, data),
   delete: (id: string): Promise<AxiosResponse<void>> => apiClient.delete(`/pigeons/${id}/`),
+}
+export const pigeonEventsApi = {
+  list: (pigeonId: string): Promise<AxiosResponse<PaginatedResponse<PigeonEvent>>> => 
+    apiClient.get(`/pigeons/${pigeonId}/events/`),
+  
+  create: (pigeonId: string, data: Partial<PigeonEvent>): Promise<AxiosResponse<PigeonEvent>> => 
+    apiClient.post(`/pigeons/${pigeonId}/events/`, data),
 }
 
 // Cages API
