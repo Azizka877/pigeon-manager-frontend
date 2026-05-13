@@ -1,36 +1,111 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+README.md — Pigeon Manager Frontend (Web)
 
-## Getting Started
+# Pigeon Manager Frontend
 
-First, run the development server:
+Application web de gestion de colombier pour éleveurs de pigeons voyageurs. Développée avec **Next.js 16**, **React 19**, **Tailwind CSS v4** et **shadcn/ui**.
+
+🔗 **URL de production** : [https://pigeon-manager-frontend.vercel.app](https://pigeon-manager-frontend.vercel.app)
+
+---
+
+## 🖥️ Fonctionnalités
+
+| Module | Description |
+|--------|-------------|
+| **Dashboard** | Vue d'ensemble du colombier, statistiques, accès rapide |
+| **Pigeons** | Liste complète, fiche détail (infos, généalogie, palmarès, santé), CRUD |
+| **Cages** | Grille visuelle, détail avec occupation, historique, actions |
+| **Couples** | Formation et gestion des couples reproducteurs |
+| **Reproductions** | Suivi des saisons de reproduction, pontes, éclosions |
+| **Sorties** | Déclaration des sorties (vente, décès, perte) |
+| **Profil** | Informations utilisateur, paramètres |
+
+---
+
+## 🏗️ Architecture
+
+
+
+
+
+
+
+
+---
+
+## 🚀 Installation & Lancement
+
+### Prérequis
+- Node.js ≥ 20
+- npm ou pnpm
+
+### Installation
 
 ```bash
+git clone https://github.com/Azizka877/pigeon-manager-frontend.git
+cd frontend
+npm install
+
+
+Variables d'environnement
+Crée un fichier .env.local :
+NEXT_PUBLIC_API_URL=https://pigeon-manager-back.onrender.com/api
+
+Lancer en développement
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+Ouvre http://localhost:3000
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Build production
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+npm run build
+npm start
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Déploiement
+Vercel (recommandé)
 
-## Learn More
+npm install -g vercel
+vercel --prod
+Ou via GitHub :
+Connecte le repo à Vercel
+Variable d'environnement : NEXT_PUBLIC_API_URL
+Déploiement automatique sur chaque push
 
-To learn more about Next.js, take a look at the following resources:
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+🔧 Stack Technique
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+| Technologie         | Usage                            |
+| ------------------- | -------------------------------- |
+| **Next.js 16**      | Framework React (App Router)     |
+| **React 19**        | UI library                       |
+| **TypeScript 5**    | Typage statique                  |
+| **Tailwind CSS v4** | Utility-first CSS                |
+| **shadcn/ui**       | Composants UI (Radix + Tailwind) |
+| **React Query v5**  | Data fetching, cache, mutations  |
+| **Zustand**         | State management                 |
+| **Axios**           | HTTP client                      |
+| **Lucide React**    | Icônes                           |
+| **Sonner**          | Notifications toast              |
 
-## Deploy on Vercel
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+🔐 Authentification
+JWT Access/Refresh tokens
+Interceptors Axios pour renouvellement automatique
+localStorage pour persistance
+Middleware Next.js pour protection des routes
+🎨 Design System
+shadcn/ui : composants accessibles et personnalisables
+Tailwind CSS v4 : styling utility-first
+Lucide : icônes cohérentes
+Sonner : toasts élégants
+Thème clair/sombre avec next-themes
+🌐 API Backend
+URL : https://pigeon-manager-back.onrender.com/api
+Tech : Django REST Framework
+Auth : JWT (SimpleJWT)
+Endpoints : pigeons, cages, couples, reproductions, sorties, users
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+
+
+
+👤 Auteur
+Abdoul Aziz KA — @Azizka877
