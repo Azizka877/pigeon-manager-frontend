@@ -110,7 +110,7 @@ export default function PigeonDetailPage() {
         </div>
 
         <div className="flex gap-2">
-          <Link href={`/pigeons/${pigeon.id}/modifier`}>
+          <Link href={`/pigeons/${pigeon.id}/edit`}>
             <Button variant="outline" className="gap-2">
               <Pencil className="w-4 h-4" />
               Modifier
