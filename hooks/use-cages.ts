@@ -73,6 +73,8 @@ export function useOccuperCage() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['cages'] })
+       queryClient.invalidateQueries({ queryKey: ['pigeons'] }) 
+      queryClient.invalidateQueries({ queryKey: ['couples'] })
     },
     onError: (err: any) => {
       console.error("🔴 HOOK - erreur:", err.response?.data || err.message)
@@ -88,6 +90,8 @@ export function useLibererCage() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['cages'] })
+      queryClient.invalidateQueries({ queryKey: ['pigeons'] })  
+      queryClient.invalidateQueries({ queryKey: ['couples'] })  
     },
   })
 }

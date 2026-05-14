@@ -189,20 +189,14 @@ const router = useRouter()
     type_occupation: 'couple' as const,   
   }
   
-  console.log("🔴 AFFECTER COUPLE - payload:", payload)
   
   try {
     const result = await occuperMutation.mutateAsync(payload)
-    console.log("🔴 AFFECTER COUPLE - succès:", result)
     toast.success('Couple affecté avec succès')
     setSelectedCouple('')
     setShowAffecterCouple(false)
   } catch (err: any) {
-    console.error("🔴 AFFECTER COUPLE - ERREUR COMPLÈTE:", err)
-    console.error("🔴 AFFECTER COUPLE - err.response:", err.response)
-    console.error("🔴 AFFECTER COUPLE - err.response?.data:", err.response?.data)
-    console.error("🔴 AFFECTER COUPLE - err.response?.status:", err.response?.status)
-    console.error("🔴 AFFECTER COUPLE - err.message:", err.message)
+    
     toast.error(`Erreur affectation: ${JSON.stringify(err.response?.data) || err.message || 'Inconnue'}`)
   }
 }
