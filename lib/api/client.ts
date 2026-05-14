@@ -5,6 +5,7 @@ import type { TokenResponse, User, Cage, PaginatedResponse, Pigeon, Couple,
    PigeonEvent} from '@/types'
 import type { HistoriqueItem } from '@/types'
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api'
+import type { RecentActivityResponse } from '@/hooks/useRecentActivity'
 
 
 const apiClient = axios.create({
@@ -176,5 +177,19 @@ export const historiqueApi = {
   create: (cageId: string, data: Partial<HistoriqueItem>): Promise<AxiosResponse<HistoriqueItem>> => 
     apiClient.post(`/cages/${cageId}/historique/`, data),
 }
+
+
+
+// lib/api/client.ts — AJOUTER avec les autres exports
+
+
+export const activitiesApi = {
+  list: (limit?: number): Promise<AxiosResponse<RecentActivityResponse>> =>
+    apiClient.get('/activites/', { params: limit ? { limit } : undefined }),
+}
+
+
+
+
 
 export default apiClient
