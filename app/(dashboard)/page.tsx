@@ -1,9 +1,10 @@
+'use client'
+
 import { OccupationGauge } from '../../components/dashboard/charts/occupation-gauge';
 import { SexeDistribution } from '../../components/dashboard/charts/sexe-distribution';
 import { AlertsPanel } from '../../components/dashboard/alerts-panel';
 import { RecentActivity } from '../../components/dashboard/recent-activity';
 import { QuickActions } from '../../components/dashboard/quick-actions';
-'use client'
 
 import { StatsCards } from '@/components/dashboard/stats-cards';
 
@@ -13,7 +14,7 @@ export default function DashboardPage() {
       {/* Header */}
       <div>
         <h1 className="text-3xl font-bold text-on-surface">Tableau de bord</h1>
-        <p className="text-on-surface-variant mt-1">Vue d'ensemble de votre volièr</p>
+        <p className="text-on-surface-variant mt-1">Vue d'ensemble de votre volière</p>
       </div>
 
       {/* KPI Cards */}
