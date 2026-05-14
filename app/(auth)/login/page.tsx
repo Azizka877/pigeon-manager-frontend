@@ -3,7 +3,8 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { useAuthStore } from '@/stores/auth-store'
-import { Bird } from 'lucide-react'
+import { Bird, AlertCircle } from 'lucide-react'
+import Link from 'next/link'
 
 export default function LoginPage() {
   const router = useRouter()
@@ -36,7 +37,6 @@ export default function LoginPage() {
 
   return (
     <div className="min-h-screen bg-[#f0f4f3] flex items-center justify-center p-4">
-      {/* Carte de connexion */}
       <div className="w-full max-w-[420px] bg-white rounded-2xl shadow-sm border border-gray-200/60 p-8 md:p-10">
         
         {/* Logo */}
@@ -52,7 +52,8 @@ export default function LoginPage() {
 
         {/* Erreur */}
         {error && (
-          <div className="mb-5 p-3 bg-red-50 border border-red-200 rounded-lg text-sm text-red-600">
+          <div className="mb-5 p-3 bg-red-50 border border-red-200 rounded-lg text-sm text-red-600 flex items-center gap-2">
+            <AlertCircle className="w-4 h-4 flex-shrink-0" />
             {error}
           </div>
         )}
@@ -82,13 +83,12 @@ export default function LoginPage() {
               <label htmlFor="password" className="block text-sm font-medium text-gray-700">
                 Mot de passe
               </label>
-              <button
-                type="button"
-                onClick={() => alert('Contactez l\'administrateur pour réinitialiser votre mot de passe.')}
+              <Link
+                href="/contact-admin?reason=password"
                 className="text-sm text-[#00685f] hover:text-[#00554d] font-medium transition-colors"
               >
                 Mot de passe oublié ?
-              </button>
+              </Link>
             </div>
             <input
               id="password"
@@ -125,18 +125,17 @@ export default function LoginPage() {
           </button>
         </form>
 
-        {/* Lien créer compte */}
-        <div className="mt-6 text-center">
+        {/* Message informatif — remplace le lien "Créer un compte" */}
+        <div className="mt-6 pt-5 border-t border-gray-100 text-center">
           <p className="text-sm text-gray-500">
-            Pas encore de compte ?{' '}
-            <button
-              type="button"
-              onClick={() => alert('Contactez l\'administrateur pour créer un compte.')}
-              className="text-[#00685f] hover:text-[#00554d] font-medium transition-colors"
-            >
-              Créer un compte
-            </button>
+            Accès réservé aux administrateurs
           </p>
+          <Link 
+            href="/contact-admin?reason=account"
+            className="text-xs text-gray-400 hover:text-[#00685f] transition-colors mt-1 inline-block"
+          >
+            Demander un accès →
+          </Link>
         </div>
       </div>
     </div>
