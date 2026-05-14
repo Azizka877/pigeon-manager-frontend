@@ -5,7 +5,7 @@ import type { TokenResponse, User, Cage, PaginatedResponse, Pigeon, Couple,
    PigeonEvent} from '@/types'
 import type { HistoriqueItem } from '@/types'
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api'
-import type { RecentActivityResponse } from '@/hooks/useRecentActivity'
+import type { RecentActivityResponse } from '@/types'
 
 
 const apiClient = axios.create({

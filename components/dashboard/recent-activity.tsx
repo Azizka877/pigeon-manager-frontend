@@ -2,7 +2,7 @@
 'use client'
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { useRecentActivity } from '@/hooks/use-recent-activity'
+import { useRecentActivity } from '@/hooks/useRecentActivity'
 import { Clock, Home, Bird, Heart, Egg, ShoppingCart, AlertCircle } from 'lucide-react'
 import Link from 'next/link'
 import { formatDistanceToNow } from 'date-fns'

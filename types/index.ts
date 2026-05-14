@@ -159,6 +159,32 @@ export interface HistoriqueItem {
   utilisateur_nom: string
   metadata: Record<string, any>
 }
+
+export interface ActivityItem {
+  id: string
+  type: 'cage' | 'pigeon' | 'couple' | 'reproduction' | 'sortie'
+  type_action: string
+  titre: string
+  description: string
+  date: string
+  badge?: string
+  utilisateur?: string | null
+  metadata?: {
+    couple_id?: string | null
+    pigeon_id?: string | null
+    type_occupation?: string
+    matricule?: string
+    sexe?: string
+    male?: string
+    femelle?: string
+    [key: string]: unknown
+  }
+}
+
+export interface RecentActivityResponse {
+  count: number
+  results: ActivityItem[]
+}
 // ═══════════════════════════════════════════════════════════
 // TYPES POUR LES RÉPONSES API SPÉCIFIQUES
 // ═══════════════════════════════════════════════════════════
