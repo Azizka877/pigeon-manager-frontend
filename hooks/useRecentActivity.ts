@@ -14,7 +14,7 @@ export interface UseRecentActivityOptions {
 const RECENT_ACTIVITY_KEY = 'recent-activity'
 
 export function useRecentActivity(options: UseRecentActivityOptions = {}) {
-  const { limit = 10, enabled = true } = options
+  const { limit = 5, enabled = true } = options
 
   return useQuery<RecentActivityResponse, Error>({
     queryKey: [RECENT_ACTIVITY_KEY, { limit }],

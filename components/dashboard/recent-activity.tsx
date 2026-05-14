@@ -75,7 +75,7 @@ function formatRelativeTime(dateStr: string): string {
 }
 
 export function RecentActivity() {
-  const { data, isLoading, error } = useRecentActivity({ limit: 10 })
+  const { data, isLoading, error } = useRecentActivity({ limit: 5 })
 
   const activities = data?.results ?? []
 
