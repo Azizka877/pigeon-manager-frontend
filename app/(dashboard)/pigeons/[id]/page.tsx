@@ -116,10 +116,12 @@ export default function PigeonDetailPage() {
               Modifier
             </Button>
           </Link>
+          <Link href="/sales/new">
           <Button variant="destructive" className="gap-2 bg-[#ba1a1a] hover:bg-[#991b1b]">
             <LogOut className="w-4 h-4" />
             Enregistrer une sortie
           </Button>
+          </Link>
         </div>
       </div>
 

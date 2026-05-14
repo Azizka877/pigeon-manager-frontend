@@ -65,7 +65,7 @@ export default function NouvelleSortiePage() {
   return (
     <div className="max-w-2xl mx-auto">
       <div className="mb-6">
-        <Link href="/sorties">
+        <Link href="/sales">
           <Button variant="ghost" className="gap-2 text-gray-500 mb-4 pl-0">
             <ArrowLeft className="w-4 h-4" />
             Retour aux sorties

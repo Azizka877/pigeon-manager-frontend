@@ -160,25 +160,20 @@ const router = useRouter()
   if (!selectedCage || !selectedPigeon) return
   
   const payload = {
-    cage_id: selectedCage,      // ✅ snake_case
-    pigeon_id: selectedPigeon,  // ✅ snake_case
-    type_occupation: 'seul' as const,     // ✅ snake_case
+    cage_id: selectedCage,      
+    pigeon_id: selectedPigeon,  
+    type_occupation: 'seul' as const,     
   }
   
   console.log("🔴 AFFECTER PIGEON - payload:", payload)
   
   try {
     const result = await occuperMutation.mutateAsync(payload)
-    console.log("🔴 AFFECTER PIGEON - succès:", result)
     toast.success('Pigeon affecté avec succès')
     setSelectedPigeon('')
     setShowAffecterPigeon(false)
   } catch (err: any) {
-    console.error("🔴 AFFECTER PIGEON - ERREUR COMPLÈTE:", err)
-    console.error("🔴 AFFECTER PIGEON - err.response:", err.response)
-    console.error("🔴 AFFECTER PIGEON - err.response?.data:", err.response?.data)
-    console.error("🔴 AFFECTER PIGEON - err.response?.status:", err.response?.status)
-    console.error("🔴 AFFECTER PIGEON - err.message:", err.message)
+    
     toast.error(`Erreur affectation: ${JSON.stringify(err.response?.data) || err.message || 'Inconnue'}`)
   }
 }
@@ -189,9 +184,9 @@ const router = useRouter()
   if (!selectedCage || !selectedCouple) return
   
   const payload = {
-    cage_id: selectedCage,       // ✅ snake_case
-    couple_id: selectedCouple,   // ✅ snake_case
-    type_occupation: 'couple' as const,   // ✅ snake_case
+    cage_id: selectedCage,       
+    couple_id: selectedCouple,   
+    type_occupation: 'couple' as const,   
   }
   
   console.log("🔴 AFFECTER COUPLE - payload:", payload)

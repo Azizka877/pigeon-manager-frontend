@@ -14,8 +14,7 @@ export function useCages(): UseQueryResult<Cage[], Error> {
       
       try {
         const response = await cagesApi.list()
-        console.log('🔍 [useCages] Response status:', response.status)
-        console.log('🔍 [useCages] Response data:', response.data)
+      
         
         // La réponse est de type PaginatedResponse
         const data = response.data as CagesApiResponse
@@ -61,17 +60,13 @@ export function useOccuperCage() {
     }) => {
       const { cage_id, pigeon_id, couple_id, type_occupation } = params
       
-      console.log("🔴 HOOK - cage_id:", cage_id)
-      console.log("🔴 HOOK - pigeon_id:", pigeon_id)
-      console.log("🔴 HOOK - couple_id:", couple_id)
-      console.log("🔴 HOOK - type_occupation:", type_occupation)
+     
 
       const body: any = {}
       if (pigeon_id) body.pigeon_id = pigeon_id
       if (couple_id) body.couple_id = couple_id
       body.type_occupation = type_occupation
 
-      console.log("🔴 HOOK - body envoyé:", body)
 
       const { data } = await cagesApi.occuper(cage_id, body)
       return data
