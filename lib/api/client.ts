@@ -5,9 +5,7 @@ import type { TokenResponse, User, Cage, PaginatedResponse, Pigeon, Couple,
    PigeonEvent} from '@/types'
 import type { HistoriqueItem } from '@/types'
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api'
-console.log('🔌 ENV VAR:', process.env.NEXT_PUBLIC_API_URL)        // undefined ?
-console.log('🔌 API_URL finale:', API_URL)                          // quelle valeur ?
-console.log('🔌 Fichier .env existe ?', typeof window !== 'undefined' ? 'côté client' : 'côté serveur')
+
 
 const apiClient = axios.create({
   baseURL: API_URL,
@@ -137,7 +135,7 @@ export const cagesApi = {
   get: (id: string): Promise<AxiosResponse<Cage>> => apiClient.get(`/cages/${id}/`),
   update: (id: string, data: Partial<Cage>): Promise<AxiosResponse<Cage>> => apiClient.put(`/cages/${id}/`, data),
   delete: (id: string): Promise<AxiosResponse<void>> => apiClient.delete(`/cages/${id}/`),
-  occuper: (id: string, data: { pigeon?: string; couple?: string; type_occupation: 'seul' | 'couple' }): Promise<AxiosResponse> => 
+  occuper: (id: string, data: { pigeon_id?: string; couple_id?: string; type_occupation: 'seul' | 'couple' }): Promise<AxiosResponse> => 
     apiClient.post(`/cages/${id}/occuper/`, data),
   liberer: (id: string): Promise<AxiosResponse<void>> => apiClient.delete(`/cages/${id}/liberer/`),
 }

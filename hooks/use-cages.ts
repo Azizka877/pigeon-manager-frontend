@@ -51,31 +51,45 @@ export function useCage(id: string) {
 
 export function useOccuperCage() {
   const queryClient = useQueryClient()
+  
   return useMutation({
-    mutationFn: async ({ cageId, pigeonId, coupleId, type }: {
-      cageId: string
-      pigeonId?: string
-      coupleId?: string
-      type: 'seul' | 'couple'
+    mutationFn: async (params: {
+      cage_id: string
+      pigeon_id?: string
+      couple_id?: string
+      type_occupation: 'seul' | 'couple'
     }) => {
-      const { data } = await cagesApi.occuper(cageId, {
-        pigeon: pigeonId,
-        couple: coupleId,
-        type_occupation: type,
-      })
+      const { cage_id, pigeon_id, couple_id, type_occupation } = params
+      
+      console.log("🔴 HOOK - cage_id:", cage_id)
+      console.log("🔴 HOOK - pigeon_id:", pigeon_id)
+      console.log("🔴 HOOK - couple_id:", couple_id)
+      console.log("🔴 HOOK - type_occupation:", type_occupation)
+
+      const body: any = {}
+      if (pigeon_id) body.pigeon_id = pigeon_id
+      if (couple_id) body.couple_id = couple_id
+      body.type_occupation = type_occupation
+
+      console.log("🔴 HOOK - body envoyé:", body)
+
+      const { data } = await cagesApi.occuper(cage_id, body)
       return data
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['cages'] })
     },
+    onError: (err: any) => {
+      console.error("🔴 HOOK - erreur:", err.response?.data || err.message)
+    }
   })
 }
 
 export function useLibererCage() {
   const queryClient = useQueryClient()
   return useMutation({
-    mutationFn: async (cageId: string) => {
-      await cagesApi.liberer(cageId)
+    mutationFn: async (cage_id: string) => {
+      await cagesApi.liberer(cage_id)
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['cages'] })

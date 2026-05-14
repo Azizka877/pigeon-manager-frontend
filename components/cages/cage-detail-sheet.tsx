@@ -138,47 +138,82 @@ const router = useRouter()
 
 
   const handleLiberer = async () => {
-    if (!selectedCage) return
-    try {
-      await libererMutation.mutateAsync(selectedCage)
-      toast.success('Cage libérée avec succès')
-      handleClose()
-    } catch {
-      toast.error('Erreur lors de la libération')
-    }
+  if (!selectedCage) return
+  try {
+    console.log("🔴 LIBERER - cageId:", selectedCage)
+    const result = await libererMutation.mutateAsync(selectedCage)
+    console.log("🔴 LIBERER - succès:", result)
+    toast.success('Cage libérée avec succès')
+    handleClose()
+  } catch (err: any) {
+    console.error("🔴 LIBERER - ERREUR COMPLÈTE:", err)
+    console.error("🔴 LIBERER - err.response:", err.response)
+    console.error("🔴 LIBERER - err.response?.data:", err.response?.data)
+    console.error("🔴 LIBERER - err.response?.status:", err.response?.status)
+    console.error("🔴 LIBERER - err.message:", err.message)
+    toast.error(`Erreur libération: ${err.response?.data?.detail || err.message || 'Inconnue'}`)
   }
+}
 
-  const handleAffecterPigeon = async () => {
-    if (!selectedCage || !selectedPigeon) return
-    try {
-      await occuperMutation.mutateAsync({
-        cageId: selectedCage,
-        pigeonId: selectedPigeon,
-        type: 'seul',
-      })
-      toast.success('Pigeon affecté avec succès')
-      setSelectedPigeon('')
-      setShowAffecterPigeon(false)
-    } catch {
-      toast.error("Erreur lors de l'affectation")
-    }
+
+ const handleAffecterPigeon = async () => {
+  if (!selectedCage || !selectedPigeon) return
+  
+  const payload = {
+    cage_id: selectedCage,      // ✅ snake_case
+    pigeon_id: selectedPigeon,  // ✅ snake_case
+    type_occupation: 'seul' as const,     // ✅ snake_case
   }
+  
+  console.log("🔴 AFFECTER PIGEON - payload:", payload)
+  
+  try {
+    const result = await occuperMutation.mutateAsync(payload)
+    console.log("🔴 AFFECTER PIGEON - succès:", result)
+    toast.success('Pigeon affecté avec succès')
+    setSelectedPigeon('')
+    setShowAffecterPigeon(false)
+  } catch (err: any) {
+    console.error("🔴 AFFECTER PIGEON - ERREUR COMPLÈTE:", err)
+    console.error("🔴 AFFECTER PIGEON - err.response:", err.response)
+    console.error("🔴 AFFECTER PIGEON - err.response?.data:", err.response?.data)
+    console.error("🔴 AFFECTER PIGEON - err.response?.status:", err.response?.status)
+    console.error("🔴 AFFECTER PIGEON - err.message:", err.message)
+    toast.error(`Erreur affectation: ${JSON.stringify(err.response?.data) || err.message || 'Inconnue'}`)
+  }
+}
+
+
 
   const handleAffecterCouple = async () => {
-    if (!selectedCage || !selectedCouple) return
-    try {
-      await occuperMutation.mutateAsync({
-        cageId: selectedCage,
-        coupleId: selectedCouple,
-        type: 'couple',
-      })
-      toast.success('Couple affecté avec succès')
-      setSelectedCouple('')
-      setShowAffecterCouple(false)
-    } catch {
-      toast.error("Erreur lors de l'affectation")
-    }
+  if (!selectedCage || !selectedCouple) return
+  
+  const payload = {
+    cage_id: selectedCage,       // ✅ snake_case
+    couple_id: selectedCouple,   // ✅ snake_case
+    type_occupation: 'couple' as const,   // ✅ snake_case
   }
+  
+  console.log("🔴 AFFECTER COUPLE - payload:", payload)
+  
+  try {
+    const result = await occuperMutation.mutateAsync(payload)
+    console.log("🔴 AFFECTER COUPLE - succès:", result)
+    toast.success('Couple affecté avec succès')
+    setSelectedCouple('')
+    setShowAffecterCouple(false)
+  } catch (err: any) {
+    console.error("🔴 AFFECTER COUPLE - ERREUR COMPLÈTE:", err)
+    console.error("🔴 AFFECTER COUPLE - err.response:", err.response)
+    console.error("🔴 AFFECTER COUPLE - err.response?.data:", err.response?.data)
+    console.error("🔴 AFFECTER COUPLE - err.response?.status:", err.response?.status)
+    console.error("🔴 AFFECTER COUPLE - err.message:", err.message)
+    toast.error(`Erreur affectation: ${JSON.stringify(err.response?.data) || err.message || 'Inconnue'}`)
+  }
+}
+
+
+
 
   const isOccupied = !!cage?.occupation_actuelle
   const isCouple = cage?.occupation_actuelle?.type === 'couple'
