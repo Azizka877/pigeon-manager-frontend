@@ -13,7 +13,7 @@ export default function DashboardPage() {
       {/* Header */}
       <div>
         <h1 className="text-3xl font-bold text-on-surface">Tableau de bord</h1>
-        <p className="text-on-surface-variant mt-1">Vue d'ensemble de votre volière</p>
+        <p className="text-on-surface-variant mt-1">Vue d'ensemble de votre volièr</p>
       </div>
 
       {/* KPI Cards */}
