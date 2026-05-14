@@ -70,21 +70,33 @@ const router = useRouter()
   }
 
   // ─── FILTRAGE DES PIGEONS DISPONIBLES ─────────────────────────────
-  const pigeonsDisponibles = useMemo(() => {
-    if (!pigeons || !allCages) return []
-    const pigeonsEnCage = new Set<string>()
-    allCages.forEach((c) => {
-      if (!c.occupation_actuelle) return
-      if (c.occupation_actuelle.type === 'seul' && c.occupation_actuelle.pigeon) {
-        pigeonsEnCage.add(c.occupation_actuelle.pigeon.id)
-      }
-      if (c.occupation_actuelle.type === 'couple' && c.occupation_actuelle.couple) {
-        if (c.occupation_actuelle.couple.male) pigeonsEnCage.add(c.occupation_actuelle.couple.male)
-        if (c.occupation_actuelle.couple.femelle) pigeonsEnCage.add(c.occupation_actuelle.couple.femelle)
-      }
-    })
-    return pigeons.filter((p) => p.statut === 'actif' && !pigeonsEnCage.has(p.id))
-  }, [pigeons, allCages])
+ const pigeonsDisponibles = useMemo(() => {
+  if (!pigeons || !allCages) return []
+  
+  console.log("🔴 CALCUL pigeonsDisponibles - allCages length:", allCages.length)
+  
+  const pigeonsEnCage = new Set<string>()
+  allCages.forEach((c) => {
+    if (!c.occupation_actuelle) return
+    if (c.occupation_actuelle.type === 'seul' && c.occupation_actuelle.pigeon) {
+      console.log("🔴 PIGEON EN CAGE:", c.occupation_actuelle.pigeon.id, c.occupation_actuelle.pigeon.matricule)
+      pigeonsEnCage.add(c.occupation_actuelle.pigeon.id)
+    }
+    if (c.occupation_actuelle.type === 'couple' && c.occupation_actuelle.couple) {
+      if (c.occupation_actuelle.couple.male) pigeonsEnCage.add(c.occupation_actuelle.couple.male)
+      if (c.occupation_actuelle.couple.femelle) pigeonsEnCage.add(c.occupation_actuelle.couple.femelle)
+    }
+  })
+  
+  console.log("🔴 SET pigeonsEnCage:", Array.from(pigeonsEnCage))
+  console.log("🔴 ALL PIGEONS:", pigeons.map(p => ({ id: p.id, matricule: p.matricule })))
+  
+  const disponibles = pigeons.filter((p) => p.statut === 'actif' && !pigeonsEnCage.has(p.id))
+  
+  console.log("🔴 RESULTAT disponibles:", disponibles.map(p => p.matricule))
+  
+  return disponibles
+}, [pigeons, allCages])
 
   // ─── FILTRAGE DES COUPLES ACTIFS ──────────────────────────────────
   const couplesActifs = useMemo(() => {
