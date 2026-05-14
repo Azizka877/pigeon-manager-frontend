@@ -8,20 +8,24 @@ import type { RecentActivityResponse } from '@/types'
 
 export interface UseRecentActivityOptions {
   limit?: number
+  days?: number
   enabled?: boolean
 }
 
 const RECENT_ACTIVITY_KEY = 'recent-activity'
 
 export function useRecentActivity(options: UseRecentActivityOptions = {}) {
-  const { limit = 5, enabled = true } = options
+  const { limit = 5, days = 30, enabled = true } = options
+
+  // Clamp limit côté client aussi
+  const safeLimit = Math.min(Math.max(limit, 1), 100)
 
   return useQuery<RecentActivityResponse, Error>({
-    queryKey: [RECENT_ACTIVITY_KEY, { limit }],
+    queryKey: [RECENT_ACTIVITY_KEY, { limit: safeLimit, days }],
     queryFn: async () => {
       const response: AxiosResponse<RecentActivityResponse> = await apiClient.get(
         '/activites/',
-        { params: { limit } }
+        { params: { limit: safeLimit, days } }
       )
       return response.data
     },

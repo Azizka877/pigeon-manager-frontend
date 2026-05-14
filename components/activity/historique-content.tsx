@@ -12,7 +12,7 @@ export function HistoriqueContent() {
   const typeFilter = searchParams.get('type') || 'all'
 
   // Pas de limite = récupère tout
-  const { data, isLoading, error } = useRecentActivity({ limit: 9999 })
+  const { data, isLoading, error } = useRecentActivity({ limit: 100, days: 90 })
 
   const activities = data?.results ?? []
 
