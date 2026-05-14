@@ -54,7 +54,7 @@ export default function NouvelleSortiePage() {
       })
 
       toast.success('Sortie enregistrée avec succès')
-      router.push('/sorties')
+      router.push('/sales')
     } catch {
       toast.error('Erreur lors de l\'enregistrement')
     }
@@ -233,7 +233,7 @@ export default function NouvelleSortiePage() {
 
           {/* Actions */}
           <div className="flex justify-end gap-3 pt-4">
-            <Link href="/sorties">
+            <Link href="/sales">
               <Button type="button" variant="outline">
                 <X className="w-4 h-4 mr-2" />
                 Annuler

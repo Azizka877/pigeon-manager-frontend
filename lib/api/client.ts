@@ -5,6 +5,9 @@ import type { TokenResponse, User, Cage, PaginatedResponse, Pigeon, Couple,
    PigeonEvent} from '@/types'
 import type { HistoriqueItem } from '@/types'
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api'
+console.log('🔌 ENV VAR:', process.env.NEXT_PUBLIC_API_URL)        // undefined ?
+console.log('🔌 API_URL finale:', API_URL)                          // quelle valeur ?
+console.log('🔌 Fichier .env existe ?', typeof window !== 'undefined' ? 'côté client' : 'côté serveur')
 
 const apiClient = axios.create({
   baseURL: API_URL,
