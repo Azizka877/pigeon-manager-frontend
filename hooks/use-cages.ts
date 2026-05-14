@@ -95,3 +95,19 @@ export function useLibererCage() {
     },
   })
 }
+
+
+// hooks/use-cages.ts - AJOUTE CECI
+export function useCreateCage() {
+  const queryClient = useQueryClient()
+  
+  return useMutation({
+    mutationFn: async (data: Partial<Cage>) => {
+      const response = await cagesApi.create(data)
+      return response.data
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['cages'] })
+    },
+  })
+}

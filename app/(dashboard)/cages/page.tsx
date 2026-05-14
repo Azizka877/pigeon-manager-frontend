@@ -8,6 +8,9 @@ import { CageDetailSheet } from '@/components/cages/cage-detail-sheet'
 import { CageFilters } from '@/components/cages/cage-filters'
 import { Skeleton } from '@/components/ui/skeleton'
 import { useMemo } from 'react'
+import Link from 'next/link'
+import { Button } from '@/components/ui/button'
+import { Plus } from 'lucide-react'
 
 export default function CagesPage() {
   const { data: cages, isLoading } = useCages()
@@ -39,6 +42,12 @@ export default function CagesPage() {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-3xl font-bold text-gray-900">Volière</h1>
+          <Link href="/cages/new">
+    <Button className="gap-2">
+      <Plus className="w-4 h-4" />
+      Nouvelle cage
+    </Button>
+  </Link>
           <p className="text-gray-500 mt-1">
             {stats.total} cages • {stats.libres} libres • {stats.seuls} occupées • {stats.couples} couples
           </p>
