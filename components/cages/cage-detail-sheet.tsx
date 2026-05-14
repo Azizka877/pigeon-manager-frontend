@@ -159,44 +159,50 @@ const router = useRouter()
  const handleAffecterPigeon = async () => {
   if (!selectedCage || !selectedPigeon) return
   
-  const payload = {
-    cage_id: selectedCage,      
-    pigeon_id: selectedPigeon,  
-    type_occupation: 'seul' as const,     
-  }
-  
-  console.log("🔴 AFFECTER PIGEON - payload:", payload)
-  
   try {
-    const result = await occuperMutation.mutateAsync(payload)
-    toast.success('Pigeon affecté avec succès')
-    setSelectedPigeon('')
-    setShowAffecterPigeon(false)
-  } catch (err: any) {
+    await occuperMutation.mutateAsync({
+      cage_id: selectedCage,
+      pigeon_id: selectedPigeon,
+      type_occupation: 'seul' as const,
+    })
     
+    toast.success('Pigeon affecté avec succès')
+    
+    // ✅ Ferme le Dialog ET reset le state
+    setShowAffecterPigeon(false)
+    setSelectedPigeon('')  // Reset la sélection
+    
+    // ✅ Force la fermeture complète
+    handleClose()  // Ferme aussi le Sheet si besoin
+    
+  } catch (err: any) {
     toast.error(`Erreur affectation: ${JSON.stringify(err.response?.data) || err.message || 'Inconnue'}`)
   }
 }
 
 
 
-  const handleAffecterCouple = async () => {
+
+ const handleAffecterCouple = async () => {
   if (!selectedCage || !selectedCouple) return
   
-  const payload = {
-    cage_id: selectedCage,       
-    couple_id: selectedCouple,   
-    type_occupation: 'couple' as const,   
-  }
-  
-  
   try {
-    const result = await occuperMutation.mutateAsync(payload)
-    toast.success('Couple affecté avec succès')
-    setSelectedCouple('')
-    setShowAffecterCouple(false)
-  } catch (err: any) {
+    await occuperMutation.mutateAsync({
+      cage_id: selectedCage,
+      couple_id: selectedCouple,
+      type_occupation: 'couple' as const,
+    })
     
+    toast.success('Couple affecté avec succès')
+    
+    // ✅ Ferme le Dialog ET reset le state
+    setShowAffecterCouple(false)
+    setSelectedCouple('')  // Reset la sélection
+    
+    // ✅ Force la fermeture complète
+    handleClose()
+    
+  } catch (err: any) {
     toast.error(`Erreur affectation: ${JSON.stringify(err.response?.data) || err.message || 'Inconnue'}`)
   }
 }
