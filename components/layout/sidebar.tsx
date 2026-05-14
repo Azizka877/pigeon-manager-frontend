@@ -1,10 +1,10 @@
 'use client'
 
 import Link from 'next/link'
-import { usePathname } from 'next/navigation'
 import { cn } from '@/lib/utils'
 import { useAuthStore } from '@/stores/auth-store'
 import { useUIStore } from '@/stores/ui-store'
+import { usePathname, useRouter } from 'next/navigation'
 import {
   LayoutDashboard,
   Home,
@@ -28,11 +28,20 @@ const navItems = [
   { href: '/profile', label: 'Profil', icon: User }, 
 ]
 
+
+
+
 export function Sidebar() {
   const pathname = usePathname()
   const { user, logout, isAuthenticated } = useAuthStore()
   const { sidebarOpen, setSidebarOpen } = useUIStore()
+const router = useRouter()
 
+
+const handleLogout = () => {
+  logout()           
+  router.push('/login')  
+}
   const NavContent = () => (
     <>
       {/* Logo */}
@@ -88,7 +97,7 @@ export function Sidebar() {
       {isAuthenticated && (
         <div className="p-3 mt-auto">
           <button
-            onClick={logout}
+          onClick={handleLogout}
             className="flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium text-on-surface-variant hover:bg-error-container hover:text-destructive transition-all w-full"
           >
             <LogOut className="w-5 h-5" />
