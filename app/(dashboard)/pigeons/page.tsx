@@ -79,11 +79,11 @@ export default function PigeonsPage() {
 
       {/* Recherche & Filtres */}
       <div className="bg-white rounded-xl border border-gray-200 p-4">
-  <div className="flex flex-col sm:flex-row sm:flex-wrap sm:items-center gap-4">
-    <div className="relative w-full sm:w-auto sm:min-w-[250px] sm:max-w-md">
+  <div className="flex flex-col sm:flex-row sm:items-start gap-4">
+    <div className="relative w-full sm:w-auto sm:min-w-0 sm:flex-1 sm:max-w-[200px]">
       <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
       <Input
-        placeholder="Rechercher un matricule..."
+        placeholder="Rechercher..."
         value={recherche}
         onChange={(e) => setRecherche(e.target.value)}
         className="pl-10 bg-gray-50 border-gray-200 w-full"
