@@ -15,7 +15,7 @@ export function StatsCards() {
 
   const cagesLibres = cages?.filter((c) => !c.occupation_actuelle).length || 0
   const totalCages = cages?.length || 0
-  const couplesActifs = couples?.filter((c) => c.statut === 'actif').length || 0
+  const couplesActifs = couples?.results?.filter((c) => c.statut === 'actif').length || 0
   const sortiesMois = sorties?.filter((s) => {
     const date = new Date(s.date_sortie)
     const now = new Date()
