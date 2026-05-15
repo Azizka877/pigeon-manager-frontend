@@ -152,6 +152,7 @@ export const couplesApi = {
   create: (data: Partial<Couple>): Promise<AxiosResponse<Couple>> => apiClient.post('/couples/', data),
   get: (id: string): Promise<AxiosResponse<Couple>> => apiClient.get(`/couples/${id}/`),
   update: (id: string, data: Partial<Couple>): Promise<AxiosResponse<Couple>> => apiClient.put(`/couples/${id}/`, data),
+  partialUpdate: (id: string, data: Partial<Couple>): Promise<AxiosResponse<Couple>> => apiClient.patch(`/couples/${id}/`, data),
   delete: (id: string): Promise<AxiosResponse<void>> => apiClient.delete(`/couples/${id}/`),
 }
 

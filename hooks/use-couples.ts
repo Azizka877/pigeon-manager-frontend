@@ -52,7 +52,8 @@ export function useUpdateCouple() {
 
   return useMutation<Couple, Error, { id: string; data: Partial<Couple> }>({
     mutationFn: async ({ id, data }) => {
-      const response: AxiosResponse<Couple> = await couplesApi.update(id, data)
+      // 🔧 Utilise partialUpdate (PATCH) au lieu de update (PUT)
+      const response: AxiosResponse<Couple> = await couplesApi.partialUpdate(id, data)
       return response.data
     },
     onSuccess: (data) => {
@@ -70,8 +71,8 @@ export function useSeparateCouple() {
     mutationFn: async ({ id, date_rupture }) => {
       const today = date_rupture || new Date().toISOString().split('T')[0]
 
-      // 1. Met à jour le couple : statut = rompu + date_rupture
-      const response: AxiosResponse<Couple> = await couplesApi.update(id, {
+      // 🔧 Utilise partialUpdate (PATCH) pour ne modifier que statut et date_rupture
+      const response: AxiosResponse<Couple> = await couplesApi.partialUpdate(id, {
         statut: 'rompu',
         date_rupture: today,
       })
@@ -97,7 +98,6 @@ export function useSeparateCouple() {
       return response.data
     },
     onSuccess: () => {
-      // Invalide TOUTES les queries concernées
       queryClient.invalidateQueries({ queryKey: ['couples'] })
       queryClient.invalidateQueries({ queryKey: ['pigeons'] })
       queryClient.invalidateQueries({ queryKey: ['cages'] })
