@@ -1,4 +1,3 @@
-// app/pigeons/page.tsx
 'use client'
 
 import { useState } from 'react'
@@ -10,99 +9,16 @@ import {
   Search, 
   Plus, 
   Pencil, 
+  Trash2, 
   ChevronLeft, 
   ChevronRight,
-  Eye,
-  Calendar,
-  Palette,
-  Tag
+  Eye
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import Link from 'next/link'
 import type { Pigeon } from '@/types'
 
 type FiltreStatut = 'tous' | 'actif' | 'vendu' | 'mort' | 'perdu'
-
-// ─── Composant Card Mobile ───
-function PigeonCard({ pigeon }: { pigeon: Pigeon }) {
-  return (
-    <div className="bg-white rounded-xl border border-gray-200 p-4 space-y-3">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <code className="bg-gray-100 px-2 py-1 rounded text-sm font-mono text-gray-700">
-          {pigeon.matricule}
-        </code>
-        {getBadgeStatut(pigeon.statut)}
-      </div>
-      
-      {/* Infos */}
-      <div className="grid grid-cols-2 gap-3 text-sm">
-        <div className="flex items-start gap-2">
-          <Tag className="w-4 h-4 text-gray-400 mt-0.5" />
-          <div>
-            <p className="text-gray-500 text-xs">Race</p>
-            <p className="font-medium text-gray-900">{pigeon.race || '-'}</p>
-          </div>
-        </div>
-        <div className="flex items-start gap-2">
-          <Palette className="w-4 h-4 text-gray-400 mt-0.5" />
-          <div>
-            <p className="text-gray-500 text-xs">Couleur</p>
-            <p className="font-medium text-gray-900">{pigeon.couleur || '-'}</p>
-          </div>
-        </div>
-        <div className="flex items-start gap-2">
-          <span className="text-gray-400 text-lg leading-none">♂♀</span>
-          <div>
-            <p className="text-gray-500 text-xs">Sexe</p>
-            <p className="font-medium text-gray-900">
-              {pigeon.sexe === 'M' ? '♂ Mâle' : pigeon.sexe === 'F' ? '♀ Femelle' : '?'}
-            </p>
-          </div>
-        </div>
-        <div className="flex items-start gap-2">
-          <Calendar className="w-4 h-4 text-gray-400 mt-0.5" />
-          <div>
-            <p className="text-gray-500 text-xs">Âge</p>
-            <p className="font-medium text-gray-900">
-              {pigeon.age ? `${pigeon.age} an${pigeon.age > 1 ? 's' : ''}` : '-'}
-            </p>
-          </div>
-        </div>
-      </div>
-      
-      {/* Actions */}
-      <div className="flex gap-2 pt-2 border-t">
-        <Link href={`/pigeons/${pigeon.id}`} className="flex-1">
-          <Button variant="outline" size="sm" className="w-full gap-1">
-            <Eye className="w-3 h-3" /> Voir
-          </Button>
-        </Link>
-        <Link href={`/pigeons/${pigeon.id}/edit`} className="flex-1">
-          <Button variant="outline" size="sm" className="w-full gap-1">
-            <Pencil className="w-3 h-3" /> Modifier
-          </Button>
-        </Link>
-      </div>
-    </div>
-  )
-}
-
-// ─── Helper Badge (hors composant pour réutilisation) ───
-function getBadgeStatut(statut: string) {
-  switch (statut) {
-    case 'actif':
-      return <Badge className="bg-[#00685f] text-white hover:bg-[#00685f]">ACTIF</Badge>
-    case 'vendu':
-      return <Badge className="bg-[#fee2e2] text-[#991b1b] hover:bg-[#fee2e2]">VENDU</Badge>
-    case 'mort':
-      return <Badge className="bg-gray-200 text-gray-700 hover:bg-gray-200">DÉCÉDÉ</Badge>
-    case 'perdu':
-      return <Badge className="bg-[#ffedd5] text-[#9a3412] hover:bg-[#ffedd5]">PERDU</Badge>
-    default:
-      return <Badge className="bg-gray-100 text-gray-600">INCONNU</Badge>
-  }
-}
 
 export default function PigeonsPage() {
   const { data: pigeons, isLoading } = usePigeons()
@@ -111,7 +27,6 @@ export default function PigeonsPage() {
   const [pageActuelle, setPageActuelle] = useState(1)
   const elementsParPage = 10
 
-  // ─── LOGIQUE EXISTANTE INCHANGÉE ───
   const pigeonsFiltres = pigeons?.filter((pigeon) => {
     const correspondRecherche = pigeon.matricule.toLowerCase().includes(recherche.toLowerCase())
     const correspondStatut = filtreStatut === 'tous' || pigeon.statut === filtreStatut
@@ -122,6 +37,21 @@ export default function PigeonsPage() {
   const totalPages = Math.ceil(totalElements / elementsParPage)
   const indexDebut = (pageActuelle - 1) * elementsParPage
   const pigeonsPagines = pigeonsFiltres.slice(indexDebut, indexDebut + elementsParPage)
+
+  const getBadgeStatut = (statut: string) => {
+    switch (statut) {
+      case 'actif':
+        return <Badge className="bg-[#00685f] text-white hover:bg-[#00685f]">ACTIF</Badge>
+      case 'vendu':
+        return <Badge className="bg-[#fee2e2] text-[#991b1b] hover:bg-[#fee2e2]">VENDU</Badge>
+      case 'mort':
+        return <Badge className="bg-gray-200 text-gray-700 hover:bg-gray-200">DÉCÉDÉ</Badge>
+      case 'perdu':
+        return <Badge className="bg-[#ffedd5] text-[#9a3412] hover:bg-[#ffedd5]">PERDU</Badge>
+      default:
+        return <Badge className="bg-gray-100 text-gray-600">INCONNU</Badge>
+    }
+  }
 
   if (isLoading) {
     return (
@@ -178,75 +108,74 @@ export default function PigeonsPage() {
         </div>
       </div>
 
-      {/* ─── DESKTOP : Tableau (md et plus) ─── */}
-      <div className="hidden md:block bg-white rounded-xl border border-gray-200 overflow-x-auto">
-        <div className="overflow-x-auto">
-          <table className="w-full min-w-[800px] overflow-x-auto">
-            <thead className="bg-gray-50 border-b border-gray-200">
-              <tr>
-                <th className="text-left px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">
-                  Matricule
-                </th>
-                <th className="text-left px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">
-                  Race / Détails
-                </th>
-                <th className="text-left px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">
-                  Statut
-                </th>
-                <th className="text-left px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">
-                  Sexe / Âge
-                </th>
-                <th className="text-left px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">
-                  Actions
-                </th>
+      {/* Tableau */}
+      <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
+        <table className="w-full">
+          <thead className="bg-gray-50 border-b border-gray-200">
+            <tr>
+              <th className="text-left px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                Matricule
+              </th>
+              <th className="text-left px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                Race / Détails
+              </th>
+              <th className="text-left px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                Statut
+              </th>
+              <th className="text-left px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                Sexe / Âge
+              </th>
+              <th className="text-left px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                Actions
+              </th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-gray-100">
+            {pigeonsPagines.map((pigeon) => (
+              <tr key={pigeon.id} className="hover:bg-gray-50 transition-colors">
+                <td className="px-6 py-4">
+                  <code className="bg-gray-100 px-2 py-1 rounded text-sm font-mono text-gray-700">
+                    {pigeon.matricule}
+                  </code>
+                </td>
+                <td className="px-6 py-4">
+                  <div className="font-medium text-gray-900">{pigeon.race}</div>
+                  <div className="text-sm text-gray-500">
+                    {pigeon.couleur || 'Aucune couleur spécifiée'}
+                  </div>
+                </td>
+                <td className="px-6 py-4">
+                  {getBadgeStatut(pigeon.statut)}
+                </td>
+                <td className="px-6 py-4">
+                  <div className="text-sm text-gray-700">
+                    {pigeon.sexe === 'M' ? '♂ Mâle' : '♀ Femelle'}
+                  </div>
+                  <div className="text-sm text-gray-500">
+                    {pigeon.age ? `${pigeon.age} an${pigeon.age > 1 ? 's' : ''}` : 'Âge inconnu'}
+                  </div>
+                </td>
+                <td className="px-6 py-4">
+                  <div className="flex gap-2">
+                    <Link href={`/pigeons/${pigeon.id}`}>
+                      <Button variant="ghost" size="icon" className="h-8 w-8">
+                        <Eye className="w-4 h-4 text-[#00685f]" />
+                      </Button>
+                    </Link>
+                    <Link href={`/pigeons/${pigeon.id}/edit`}>
+                      <Button variant="ghost" size="icon" className="h-8 w-8">
+                        <Pencil className="w-4 h-4 text-gray-500" />
+                      </Button>
+                    </Link>
+                   
+                  </div>
+                </td>
               </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-100">
-              {pigeonsPagines.map((pigeon) => (
-                <tr key={pigeon.id} className="hover:bg-gray-50 transition-colors">
-                  <td className="px-6 py-4">
-                    <code className="bg-gray-100 px-2 py-1 rounded text-sm font-mono text-gray-700">
-                      {pigeon.matricule}
-                    </code>
-                  </td>
-                  <td className="px-6 py-4">
-                    <div className="font-medium text-gray-900">{pigeon.race}</div>
-                    <div className="text-sm text-gray-500">
-                      {pigeon.couleur || 'Aucune couleur spécifiée'}
-                    </div>
-                  </td>
-                  <td className="px-6 py-4">
-                    {getBadgeStatut(pigeon.statut)}
-                  </td>
-                  <td className="px-6 py-4">
-                    <div className="text-sm text-gray-700">
-                      {pigeon.sexe === 'M' ? '♂ Mâle' : '♀ Femelle'}
-                    </div>
-                    <div className="text-sm text-gray-500">
-                      {pigeon.age ? `${pigeon.age} an${pigeon.age > 1 ? 's' : ''}` : 'Âge inconnu'}
-                    </div>
-                  </td>
-                  <td className="px-6 py-4">
-                    <div className="flex gap-2">
-                      <Link href={`/pigeons/${pigeon.id}`}>
-                        <Button variant="ghost" size="icon" className="h-8 w-8">
-                          <Eye className="w-4 h-4 text-[#00685f]" />
-                        </Button>
-                      </Link>
-                      <Link href={`/pigeons/${pigeon.id}/edit`}>
-                        <Button variant="ghost" size="icon" className="h-8 w-8">
-                          <Pencil className="w-4 h-4 text-gray-500" />
-                        </Button>
-                      </Link>
-                    </div>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+            ))}
+          </tbody>
+        </table>
 
-        {/* Pagination Desktop */}
+        {/* Pagination */}
         <div className="flex items-center justify-between px-6 py-4 border-t border-gray-200">
           <p className="text-sm text-gray-500">
             Affichage de {indexDebut + 1} à {Math.min(indexDebut + elementsParPage, totalElements)} sur {totalElements} entrées
@@ -272,36 +201,6 @@ export default function PigeonsPage() {
               <ChevronRight className="w-4 h-4" />
             </Button>
           </div>
-        </div>
-      </div>
-
-      {/* ─── MOBILE : Cards (moins de md) ─── */}
-      <div className="md:hidden space-y-3">
-        {pigeonsPagines.map((pigeon) => (
-          <PigeonCard key={pigeon.id} pigeon={pigeon} />
-        ))}
-        
-        {/* Pagination Mobile */}
-        <div className="flex items-center justify-between pt-4">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => setPageActuelle(p => Math.max(1, p - 1))}
-            disabled={pageActuelle === 1}
-          >
-            <ChevronLeft className="w-4 h-4 mr-1" /> Préc.
-          </Button>
-          <span className="text-sm text-gray-600">
-            Page {pageActuelle} / {totalPages || 1}
-          </span>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => setPageActuelle(p => Math.min(totalPages, p + 1))}
-            disabled={pageActuelle === totalPages || totalPages === 0}
-          >
-            Suiv. <ChevronRight className="w-4 h-4 ml-1" />
-          </Button>
         </div>
       </div>
     </div>
