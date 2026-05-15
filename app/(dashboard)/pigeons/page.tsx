@@ -86,7 +86,7 @@ export default function PigeonsPage() {
         placeholder="Rechercher..."
         value={recherche}
         onChange={(e) => setRecherche(e.target.value)}
-        className="pl-10 bg-gray-50 border-gray-200 w-full sm:max-w-[200px]"
+        className="pl-10 bg-gray-50 border-gray-200 w-full "
       />
     </div>
     <div className="flex gap-2 flex-wrap flex-1">
