@@ -2,7 +2,11 @@
 import axios, { AxiosResponse } from 'axios'
 import type { TokenResponse, User, Cage, PaginatedResponse, Pigeon, Couple,
    Reproduction, Sortie , ColombierConfig, Plan, Invoice, 
-   PigeonEvent} from '@/types'
+   PigeonEvent,
+   ParentsResponse,
+   ArbreResponse,
+   FreresSoeursResponse,
+   DescendantsResponse} from '@/types'
 import type { HistoriqueItem } from '@/types'
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api'
 import type { RecentActivityResponse } from '@/types'
@@ -189,6 +193,19 @@ export const activitiesApi = {
 }
 
 
+export const genealogieApi = {
+  arbre: (pigeonId: string, profondeur?: number): Promise<AxiosResponse<ArbreResponse>> =>
+    apiClient.get(`/pigeons/${pigeonId}/arbre/`, { params: profondeur ? { profondeur } : undefined }),
+  
+  parents: (pigeonId: string): Promise<AxiosResponse<ParentsResponse>> =>
+    apiClient.get(`/pigeons/${pigeonId}/parents/`),
+  
+  freresSoeurs: (pigeonId: string): Promise<AxiosResponse<FreresSoeursResponse>> =>
+    apiClient.get(`/pigeons/${pigeonId}/freres-soeurs/`),
+  
+  descendants: (pigeonId: string): Promise<AxiosResponse<DescendantsResponse>> =>
+    apiClient.get(`/pigeons/${pigeonId}/descendants/`),
+}
 
 
 

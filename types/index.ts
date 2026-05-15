@@ -196,3 +196,58 @@ export interface ReproductionsApiResponse extends PaginatedResponse<Reproduction
 export interface SortiesApiResponse extends PaginatedResponse<Sortie> {}
 // Réponse API pour les cages
 export interface CagesApiResponse extends PaginatedResponse<Cage> {}
+
+
+
+
+
+
+export interface PigeonMini {
+  id: string
+  matricule: string
+  sexe: string
+  sexe_display: string
+  race: string
+  couleur?: string
+  generation: number
+}
+
+export interface ArbreNode {
+  id: string
+  matricule: string
+  sexe: string
+  generation: number
+  date_naissance?: string
+  pere?: ArbreNode | null
+  mere?: ArbreNode | null
+}
+
+export interface ArbreResponse {
+  pigeon: {
+    id: string
+    matricule: string
+    sexe: string
+    generation: number
+  }
+  arbre: ArbreNode
+  profondeur: number
+}
+
+export interface ParentsResponse {
+  pere: PigeonMini | null
+  mere: PigeonMini | null
+}
+
+export interface FreresSoeursResponse {
+  count: number
+  results: PigeonMini[]
+}
+
+export interface DescendantsResponse {
+  count: number
+  results: Array<{
+    niveau: number
+    relation: string
+    pigeon: PigeonMini
+  }>
+}
