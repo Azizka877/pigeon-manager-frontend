@@ -64,7 +64,7 @@ export default function PigeonsPage() {
   return (
     <div className="space-y-6">
       {/* En-tête */}
-      <div className="flex items-center justify-between">
+      <div className="md:flex-col flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold text-gray-900">Pigeons</h1>
           <p className="text-gray-500 mt-1">Gérez votre registre complet de colombier.</p>
