@@ -100,7 +100,7 @@ export default function PigeonsPage() {
       </div>
 
       {/* ─── DESKTOP : Tableau (md et plus) ─── */}
-      <div className="hidden md:block bg-white rounded-xl border border-gray-200 overflow-hidden">
+      <div className="hidden md:block bg-white rounded-xl border border-gray-200 overflow-x-auto">
         <div className="overflow-x-auto">
           <table className="w-full min-w-[800px]">
             <thead className="bg-gray-50 border-b border-gray-200">
