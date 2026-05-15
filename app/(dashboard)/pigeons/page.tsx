@@ -79,34 +79,34 @@ export default function PigeonsPage() {
 
       {/* Recherche & Filtres */}
       <div className="bg-white rounded-xl border border-gray-200 p-4">
-        <div className="flex flex-wrap items-center gap-4">
-          <div className="relative flex-1 max-w-md">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-            <Input
-              placeholder="Rechercher un matricule..."
-              value={recherche}
-              onChange={(e) => setRecherche(e.target.value)}
-              className="pl-10 bg-gray-50 border-gray-200"
-            />
-          </div>
-          <div className="flex gap-2 flex-wrap">
-            {(['tous', 'actif', 'vendu', 'mort', 'perdu'] as FiltreStatut[]).map((statut) => (
-              <button
-                key={statut}
-                onClick={() => setFiltreStatut(statut)}
-                className={cn(
-                  'px-4 py-2 rounded-lg text-sm font-medium transition-colors',
-                  filtreStatut === statut
-                    ? 'bg-[#00685f] text-white'
-                    : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-                )}
-              >
-                {statut === 'tous' ? 'TOUS' : statut.toUpperCase()}
-              </button>
-            ))}
-          </div>
-        </div>
-      </div>
+  <div className="flex flex-col sm:flex-row sm:flex-wrap sm:items-center gap-4">
+    <div className="relative w-full sm:w-auto sm:min-w-[250px] sm:max-w-md">
+      <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+      <Input
+        placeholder="Rechercher un matricule..."
+        value={recherche}
+        onChange={(e) => setRecherche(e.target.value)}
+        className="pl-10 bg-gray-50 border-gray-200 w-full"
+      />
+    </div>
+    <div className="flex gap-2 flex-wrap flex-1">
+      {(['tous', 'actif', 'vendu', 'mort', 'perdu'] as FiltreStatut[]).map((statut) => (
+        <button
+          key={statut}
+          onClick={() => setFiltreStatut(statut)}
+          className={cn(
+            'px-3 py-2 rounded-lg text-sm font-medium transition-colors whitespace-nowrap',
+            filtreStatut === statut
+              ? 'bg-[#00685f] text-white'
+              : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+          )}
+        >
+          {statut === 'tous' ? 'TOUS' : statut.toUpperCase()}
+        </button>
+      ))}
+    </div>
+  </div>
+</div>
 
       {/* Tableau */}
       <div className="bg-white rounded-xl border border-gray-200 overflow-x-auto">
