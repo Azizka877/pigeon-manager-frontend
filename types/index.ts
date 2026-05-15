@@ -251,3 +251,23 @@ export interface DescendantsResponse {
     pigeon: PigeonMini
   }>
 }
+
+export interface JeuneFormData {
+  matricule: string
+  sexe: 'M' | 'F'
+  couleur: string
+}
+
+export interface CreateReproductionPayload {
+  couple: string
+  date_ponte: string
+  date_eclosion?: string
+  nombre_oeufs?: number
+  notes?: string
+  // Le backend accepte ce champ pour créer les jeunes
+  jeunes?: Array<{
+    matricule: string
+    sexe: 'M' | 'F'
+    couleur: string
+  }>
+}
