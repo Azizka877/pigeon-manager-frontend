@@ -197,7 +197,7 @@ export default function PigeonsPage() {
       </div>
 
       {/* ─── MOBILE : Cards (moins de md) ─── */}
-      <div className="md:hidden space-y-3">
+      <div className="lg:hidden grid grid-cols-1 sm:grid-cols-2 gap-3 p-4">
         {pigeonsPagines.map((pigeon) => (
           <PigeonCard key={pigeon.id} pigeon={pigeon} />
         ))}
