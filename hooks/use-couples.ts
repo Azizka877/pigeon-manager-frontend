@@ -1,9 +1,8 @@
-// hooks/use-couples.ts
 'use client'
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { couplesApi } from '@/lib/api/client'
-import type { Couple, PaginatedResponse } from '@/types'
+import { couplesApi, cagesApi } from '@/lib/api/client'
+import type { Couple, PaginatedResponse, Cage } from '@/types'
 import type { AxiosResponse } from 'axios'
 
 // ─── GET : Liste des couples ───
@@ -34,7 +33,7 @@ export function useCouple(id: string) {
 // ─── POST : Créer un couple ───
 export function useCreateCouple() {
   const queryClient = useQueryClient()
-  
+
   return useMutation<Couple, Error, { male: string; femelle: string }>({
     mutationFn: async (data) => {
       const response: AxiosResponse<Couple> = await couplesApi.create(data)
@@ -42,14 +41,15 @@ export function useCreateCouple() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['couples'] })
+      queryClient.invalidateQueries({ queryKey: ['pigeons'] })
     },
   })
 }
 
-// ─── PATCH : Mettre à jour un couple (pour Quick Ponte) ───
+// ─── PATCH : Mettre à jour un couple ───
 export function useUpdateCouple() {
   const queryClient = useQueryClient()
-  
+
   return useMutation<Couple, Error, { id: string; data: Partial<Couple> }>({
     mutationFn: async ({ id, data }) => {
       const response: AxiosResponse<Couple> = await couplesApi.update(id, data)
@@ -62,10 +62,54 @@ export function useUpdateCouple() {
   })
 }
 
+// ─── 🔧 SEPARER UN COUPLE (rompre) ───
+export function useSeparateCouple() {
+  const queryClient = useQueryClient()
+
+  return useMutation<Couple, Error, { id: string; date_rupture?: string }>({
+    mutationFn: async ({ id, date_rupture }) => {
+      const today = date_rupture || new Date().toISOString().split('T')[0]
+
+      // 1. Met à jour le couple : statut = rompu + date_rupture
+      const response: AxiosResponse<Couple> = await couplesApi.update(id, {
+        statut: 'rompu',
+        date_rupture: today,
+      })
+
+      // 2. Récupère TOUTES les cages pour trouver celle du couple
+      const { data: cagesData } = await cagesApi.list()
+      const cages = (cagesData.results || cagesData) as Cage[]
+
+      // 3. Trouve la cage occupée par ce couple
+      const cageOccupee = cages.find((cage: Cage) => {
+        if (!cage.occupation_actuelle) return false
+        if (cage.occupation_actuelle.type === 'couple' && cage.occupation_actuelle.couple?.id === id) {
+          return true
+        }
+        return false
+      })
+
+      // 4. Libère la cage si trouvée
+      if (cageOccupee) {
+        await cagesApi.liberer(cageOccupee.id)
+      }
+
+      return response.data
+    },
+    onSuccess: () => {
+      // Invalide TOUTES les queries concernées
+      queryClient.invalidateQueries({ queryKey: ['couples'] })
+      queryClient.invalidateQueries({ queryKey: ['pigeons'] })
+      queryClient.invalidateQueries({ queryKey: ['cages'] })
+      queryClient.invalidateQueries({ queryKey: ['cage-history'] })
+    },
+  })
+}
+
 // ─── DELETE : Supprimer un couple ───
 export function useDeleteCouple() {
   const queryClient = useQueryClient()
-  
+
   return useMutation<void, Error, string>({
     mutationFn: async (id) => {
       await couplesApi.delete(id)
