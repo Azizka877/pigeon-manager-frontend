@@ -24,15 +24,36 @@ import {
 import Link from 'next/link'
 import { cn } from '@/lib/utils'
 
+// ─── Helpers ───
+function getPeriode(dateString: string): string {
+  const mois = new Date(dateString).getMonth() + 1
+  if (mois >= 3 && mois <= 5) return 'Printemps'
+  if (mois >= 6 && mois <= 8) return 'Été'
+  if (mois >= 9 && mois <= 11) return 'Automne'
+  return 'Hiver'
+}
+
+function formatDateFr(dateString: string | undefined): string {
+  if (!dateString) return '--/--'
+  return new Date(dateString).toLocaleDateString('fr-FR', { 
+    day: '2-digit', 
+    month: '2-digit' 
+  })
+}
+
+function addDays(dateString: string, days: number): Date {
+  const date = new Date(dateString)
+  date.setDate(date.getDate() + days)
+  return date
+}
+
 export default function ReproductionDetailPage() {
   const params = useParams()
   const id = params.id as string
-  console.log('ID from params:', id)
+  
   const { data: repro, isLoading } = useReproduction(id)
   const { data: couple } = useCouple(repro?.couple || '')
-console.log('Loading:', isLoading)
-  console.log('Error:', Error)
-  console.log('Data:', repro)
+
   if (isLoading) {
     return (
       <div className="flex items-center justify-center h-96">
@@ -41,46 +62,97 @@ console.log('Loading:', isLoading)
     )
   }
 
- 
+  if (!repro) return <div>Reproduction non trouvée</div>
 
-  if (!repro) {
-    return (
-      <div className="text-center py-12">
-        <p>Reproduction non trouvée</p>
-        <p className="text-gray-500 text-sm mt-2">ID: {id || 'non défini'}</p>
-      </div>
-    )
-  }
-
+  const aujourdhui = new Date()
+  const datePonte = new Date(repro.date_ponte)
+  
   const joursDepuisPonte = Math.floor(
-    (new Date().getTime() - new Date(repro.date_ponte).getTime()) / (1000 * 60 * 60 * 24)
+    (aujourdhui.getTime() - datePonte.getTime()) / (1000 * 60 * 60 * 24)
   )
   
-  const dateEclosionPrevue = new Date(repro.date_ponte)
-  dateEclosionPrevue.setDate(dateEclosionPrevue.getDate() + 18)
+  const dateEclosionPrevue = addDays(repro.date_ponte, 18)
+  const dateSevragePrevue = repro.date_eclosion 
+    ? addDays(repro.date_eclosion, 30) 
+    : null
+  const dateTerminePrevue = repro.date_eclosion 
+    ? addDays(repro.date_eclosion, 45) 
+    : null
 
   const getStatutInfo = () => {
     if (!repro.date_eclosion) {
-      if (joursDepuisPonte < 15) return { label: 'INCUBATION', classe: 'bg-[#d1fae5] text-[#065f46]' }
-      return { label: 'ÉCLOSION IMMINENTE', classe: 'bg-[#ffedd5] text-[#9a3412]' }
+      if (joursDepuisPonte < 15) return { 
+        label: 'INCUBATION', 
+        classe: 'bg-[#d1fae5] text-[#065f46]',
+        description: `Jour ${joursDepuisPonte} sur 18`
+      }
+      return { 
+        label: 'ÉCLOSION IMMINENTE', 
+        classe: 'bg-[#ffedd5] text-[#9a3412]',
+        description: `${18 - joursDepuisPonte} jours restants`
+      }
     }
+    
     if (repro.nombre_jeunes > 0) {
       const joursDepuisEclosion = Math.floor(
-        (new Date().getTime() - new Date(repro.date_eclosion).getTime()) / (1000 * 60 * 60 * 24)
+        (aujourdhui.getTime() - new Date(repro.date_eclosion).getTime()) / (1000 * 60 * 60 * 24)
       )
-      if (joursDepuisEclosion < 30) return { label: 'SEVRAGE', classe: 'bg-[#00685f] text-white' }
+      if (joursDepuisEclosion < 30) return { 
+        label: 'SEVRAGE', 
+        classe: 'bg-[#00685f] text-white',
+        description: `Jour ${joursDepuisEclosion} sur 30`
+      }
     }
-    return { label: 'TERMINÉ', classe: 'bg-gray-200 text-gray-700' }
+    
+    return { 
+      label: 'TERMINÉ', 
+      classe: 'bg-gray-200 text-gray-700',
+      description: 'Cycle complété'
+    }
   }
 
   const statut = getStatutInfo()
 
+  // ─── Timeline dynamique ───
   const timeline = [
-    { label: 'PONTE', date: '12/05', active: true, completed: true },
-    { label: 'INCUBATION', date: `J ${joursDepuisPonte}/18`, active: joursDepuisPonte < 18, completed: joursDepuisPonte >= 18 },
-    { label: 'ÉCLOSION', date: repro.date_eclosion ? new Date(repro.date_eclosion).toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit' }) : '30/05', active: !!repro.date_eclosion, completed: !!repro.date_eclosion },
-    { label: 'SEVRAGE', date: '15/06 - Actuel', active: statut.label === 'SEVRAGE', completed: false },
-    { label: 'TERMINÉ', date: '30/06', active: statut.label === 'TERMINÉ', completed: statut.label === 'TERMINÉ' },
+    { 
+      label: 'PONTE', 
+      date: formatDateFr(repro.date_ponte), 
+      active: true, 
+      completed: true 
+    },
+    { 
+      label: 'INCUBATION', 
+      date: `J ${Math.min(joursDepuisPonte, 18)}/18`, 
+      active: joursDepuisPonte < 18 && !repro.date_eclosion, 
+      completed: joursDepuisPonte >= 18 || !!repro.date_eclosion 
+    },
+    { 
+      label: 'ÉCLOSION', 
+      date: repro.date_eclosion 
+        ? formatDateFr(repro.date_eclosion)
+        : formatDateFr(dateEclosionPrevue.toISOString()), 
+      active: !!repro.date_eclosion, 
+      completed: !!repro.date_eclosion 
+    },
+    { 
+      label: 'SEVRAGE', 
+      date: dateSevragePrevue 
+        ? `${formatDateFr(dateSevragePrevue.toISOString())} - Actuel`
+        : '--/--', 
+      active: statut.label === 'SEVRAGE', 
+      completed: false 
+    },
+    { 
+      label: 'TERMINÉ', 
+      date: repro.date_sevrage 
+        ? formatDateFr(repro.date_sevrage)
+        : dateTerminePrevue 
+          ? formatDateFr(dateTerminePrevue.toISOString())
+          : '--/--', 
+      active: statut.label === 'TERMINÉ', 
+      completed: statut.label === 'TERMINÉ' 
+    },
   ]
 
   return (
@@ -98,7 +170,7 @@ console.log('Loading:', isLoading)
               Détails de la Reproduction #{repro.id.slice(0, 12).toUpperCase()}
             </h1>
             <p className="text-gray-500 text-sm mt-1">
-              Période printemps-été 2025 • Volière A
+              {getPeriode(repro.date_ponte)} {new Date(repro.date_ponte).getFullYear()}
             </p>
           </div>
         </div>
@@ -129,32 +201,45 @@ console.log('Loading:', isLoading)
               </h3>
               
               {/* Mâle */}
-              <Link href={`/pigeons/${couple?.male}`} className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg mb-3 hover:bg-gray-100 transition-colors">
+              <Link 
+                href={`/pigeons/${repro.couple_details?.male?.id || couple?.male}`} 
+                className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg mb-3 hover:bg-gray-100 transition-colors"
+              >
                 <div className="w-12 h-12 bg-gray-200 rounded-lg overflow-hidden">
-                  {/* Placeholder image */}
                   <div className="w-full h-full bg-gradient-to-br from-blue-400 to-blue-600" />
                 </div>
-                <div className="flex-1">
-                  <code className="text-sm font-mono bg-white px-2 py-0.5 rounded border">
-                    {couple?.male_details?.matricule || 'BE-2023-100456'}
+                <div className="flex-1 min-w-0">
+                  <code className="text-sm font-mono bg-white px-2 py-0.5 rounded border truncate block">
+                    {repro.couple_details?.male?.matricule || couple?.male_details?.matricule || 'Inconnu'}
                   </code>
-                  <p className="text-sm text-gray-700 mt-1">Mâle - Bleu Barré</p>
+                  <p className="text-sm text-gray-700 mt-1 truncate">
+                    Mâle
+                    {repro.couple_details?.male?.race ? ` - ${repro.couple_details.male.race}` : ''}
+                    {couple?.male_details?.race ? ` - ${couple.male_details.race}` : ''}
+                  </p>
                 </div>
-                <ArrowLeft className="w-4 h-4 text-gray-400 rotate-180" />
+                <ArrowLeft className="w-4 h-4 text-gray-400 rotate-180 shrink-0" />
               </Link>
 
               {/* Femelle */}
-              <Link href={`/pigeons/${couple?.femelle}`} className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
+              <Link 
+                href={`/pigeons/${repro.couple_details?.femelle?.id || couple?.femelle}`} 
+                className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
+              >
                 <div className="w-12 h-12 bg-gray-200 rounded-lg overflow-hidden">
                   <div className="w-full h-full bg-gradient-to-br from-pink-400 to-pink-600" />
                 </div>
-                <div className="flex-1">
-                  <code className="text-sm font-mono bg-white px-2 py-0.5 rounded border">
-                    {couple?.femelle_details?.matricule || 'BE-2022-990832'}
+                <div className="flex-1 min-w-0">
+                  <code className="text-sm font-mono bg-white px-2 py-0.5 rounded border truncate block">
+                    {repro.couple_details?.femelle?.matricule || couple?.femelle_details?.matricule || 'Inconnue'}
                   </code>
-                  <p className="text-sm text-gray-700 mt-1">Femelle - Écaillée</p>
+                  <p className="text-sm text-gray-700 mt-1 truncate">
+                    Femelle
+                    {repro.couple_details?.femelle?.race ? ` - ${repro.couple_details.femelle.race}` : ''}
+                    {couple?.femelle_details?.race ? ` - ${couple.femelle_details.race}` : ''}
+                  </p>
                 </div>
-                <ArrowLeft className="w-4 h-4 text-gray-400 rotate-180" />
+                <ArrowLeft className="w-4 h-4 text-gray-400 rotate-180 shrink-0" />
               </Link>
             </CardContent>
           </Card>
@@ -172,10 +257,17 @@ console.log('Loading:', isLoading)
                   {statut.label}
                 </Badge>
               </div>
+              <p className="text-xs text-gray-500 mt-1 text-right">{statut.description}</p>
               <div className="flex items-center justify-between mt-3">
                 <span className="text-sm text-gray-600">Œufs éclos</span>
                 <span className="text-xl font-bold text-[#00685f]">
-                  {repro.nombre_jeunes || 0} / {repro.nombre_oeufs || 2}
+                  {repro.nombre_eclos || 0} / {repro.nombre_oeufs || 0}
+                </span>
+              </div>
+              <div className="flex items-center justify-between mt-2">
+                <span className="text-sm text-gray-600">Jeunes vivants</span>
+                <span className="text-lg font-semibold text-gray-900">
+                  {repro.nombre_jeunes || 0}
                 </span>
               </div>
             </CardContent>
@@ -195,7 +287,7 @@ console.log('Loading:', isLoading)
                 </p>
                 <p className="text-sm text-gray-500 mt-1 flex items-center gap-1">
                   <Clock className="w-3 h-3" />
-                  Il y a {joursDepuisPonte} jours
+                  Il y a {joursDepuisPonte} jour{joursDepuisPonte > 1 ? 's' : ''}
                 </p>
               </CardContent>
             </Card>
@@ -208,7 +300,7 @@ console.log('Loading:', isLoading)
                 </p>
                 <p className="text-sm text-gray-500 mt-1 flex items-center gap-1">
                   <Calendar className="w-3 h-3" />
-                  Estimé à J+18
+                  J+18 (estimation)
                 </p>
               </CardContent>
             </Card>
@@ -224,7 +316,7 @@ console.log('Loading:', isLoading)
                 </p>
                 <p className="text-sm text-gray-500 mt-1 flex items-center gap-1">
                   <CheckCircle2 className="w-3 h-3" />
-                  {repro.date_eclosion ? 'Confirmé par l\'éleveur' : 'Non confirmé'}
+                  {repro.date_eclosion ? 'Confirmée' : 'En attente'}
                 </p>
               </CardContent>
             </Card>
@@ -237,10 +329,9 @@ console.log('Loading:', isLoading)
                 Ligne de temps
               </h3>
               <div className="flex items-center justify-between relative">
-                {/* Ligne de connexion */}
                 <div className="absolute top-6 left-0 right-0 h-0.5 bg-gray-200 -z-10" />
                 
-                {timeline.map((step, index) => (
+                {timeline.map((step) => (
                   <div key={step.label} className="flex flex-col items-center gap-2">
                     <div className={cn(
                       'w-12 h-12 rounded-xl flex items-center justify-center transition-colors',
@@ -270,97 +361,101 @@ console.log('Loading:', isLoading)
           </Card>
 
           {/* Jeunes de la couvée */}
-          {/* Jeunes de la couvée */}
-<Card>
-  <CardContent className="p-5">
-    <div className="flex items-center justify-between mb-4">
-      <h3 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
-        <Users className="w-5 h-5 text-[#00685f]" />
-        Jeunes de la couvée ({repro.nombre_jeunes})
-      </h3>
-      <Button variant="ghost" className="text-[#00685f] gap-1">
-        <Plus className="w-4 h-4" />
-        Ajouter un jeune
-      </Button>
-    </div>
+          <Card>
+            <CardContent className="p-5">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
+                  <Users className="w-5 h-5 text-[#00685f]" />
+                  Jeunes de la couvée ({repro.nombre_jeunes})
+                </h3>
+                <Button variant="ghost" className="text-[#00685f] gap-1">
+                  <Plus className="w-4 h-4" />
+                  Ajouter un jeune
+                </Button>
+              </div>
 
-    {repro.jeunes_details && repro.jeunes_details.length > 0 ? (
-      <div className="space-y-3">
-        {repro.jeunes_details.map((jeune) => (
-          <div key={jeune.id} className="flex items-center gap-4 p-3 border rounded-lg hover:bg-gray-50 transition-colors">
-            <div className="w-14 h-14 bg-gray-200 rounded-lg overflow-hidden">
-              <div className={cn(
-                'w-full h-full',
-                jeune.sexe === 'M' ? 'bg-gradient-to-br from-blue-400 to-blue-600' : 
-                jeune.sexe === 'F' ? 'bg-gradient-to-br from-pink-400 to-pink-600' :
-                'bg-gradient-to-br from-gray-400 to-gray-600'
-              )} />
-            </div>
-            <div className="flex-1">
-              <div className="flex items-center gap-2">
-                <code className="text-sm font-mono bg-gray-100 px-2 py-0.5 rounded">
-                  {jeune.matricule}
-                </code>
-                <span className="text-lg">
-                  {jeune.sexe === 'M' ? '♂' : jeune.sexe === 'F' ? '♀' : '?'}
-                </span>
-              </div>
-              <p className="text-sm text-gray-700 mt-1">
-                {jeune.sexe === 'M' ? 'Mâle' : jeune.sexe === 'F' ? 'Femelle' : 'Sexe indéterminé'}
-                {jeune.race ? ` - ${jeune.race}` : ''}
-                {jeune.couleur ? ` - ${jeune.couleur}` : ''}
-              </p>
-              <div className="flex items-center gap-3 mt-1 text-xs text-gray-500">
-                <span className="flex items-center gap-1">
-                  <CheckCircle2 className="w-3 h-3" />
-                  En volière
-                </span>
-                <span className="flex items-center gap-1">
-                  <Calendar className="w-3 h-3" />
-                  Né le {new Date(repro.date_eclosion || repro.date_ponte).toLocaleDateString('fr-FR')}
-                </span>
-              </div>
-            </div>
-            <div className="flex items-center gap-1">
-              <Button variant="ghost" size="icon" className="text-gray-400 hover:text-gray-600">
-                <Eye className="w-4 h-4" />
-              </Button>
-              <Button variant="ghost" size="icon" className="text-gray-400 hover:text-red-500">
-                <Trash2 className="w-4 h-4" />
-              </Button>
-            </div>
-          </div>
-        ))}
-      </div>
-    ) : repro.nombre_jeunes > 0 ? (
-      <div className="bg-gray-50 rounded-lg p-4 text-center">
-        <p className="text-lg font-semibold text-gray-900">{repro.nombre_jeunes}</p>
-        <p className="text-sm text-gray-500">jeune(s) comptabilisé(s)</p>
-        <p className="text-xs text-gray-400 mt-2">
-          Détails non disponibles
-        </p>
-      </div>
-    ) : (
-      <div className="text-center py-8 text-gray-500">
-        <Egg className="w-12 h-12 mx-auto mb-3 text-gray-300" />
-        <p>Aucun jeune enregistré</p>
-        <Button variant="outline" className="mt-3 gap-2">
-          <Plus className="w-4 h-4" />
-          Ajouter le premier jeune
-        </Button>
-      </div>
-    )}
-  </CardContent>
-</Card>
+              {repro.jeunes_details && repro.jeunes_details.length > 0 ? (
+                <div className="space-y-3">
+                  {repro.jeunes_details.map((jeune) => (
+                    <div key={jeune.id} className="flex items-center gap-4 p-3 border rounded-lg hover:bg-gray-50 transition-colors">
+                      <div className="w-14 h-14 bg-gray-200 rounded-lg overflow-hidden">
+                        <div className={cn(
+                          'w-full h-full',
+                          jeune.sexe === 'M' ? 'bg-gradient-to-br from-blue-400 to-blue-600' : 
+                          jeune.sexe === 'F' ? 'bg-gradient-to-br from-pink-400 to-pink-600' :
+                          'bg-gradient-to-br from-gray-400 to-gray-600'
+                        )} />
+                      </div>
+                      <div className="flex-1">
+                        <div className="flex items-center gap-2">
+                          <code className="text-sm font-mono bg-gray-100 px-2 py-0.5 rounded">
+                            {jeune.matricule}
+                          </code>
+                          <span className="text-lg">
+                            {jeune.sexe === 'M' ? '♂' : jeune.sexe === 'F' ? '♀' : '?'}
+                          </span>
+                        </div>
+                        <p className="text-sm text-gray-700 mt-1">
+                          {jeune.sexe === 'M' ? 'Mâle' : jeune.sexe === 'F' ? 'Femelle' : 'Sexe indéterminé'}
+                          {jeune.race ? ` - ${jeune.race}` : ''}
+                          {jeune.couleur ? ` - ${jeune.couleur}` : ''}
+                        </p>
+                        <div className="flex items-center gap-3 mt-1 text-xs text-gray-500">
+                          <span className="flex items-center gap-1">
+                            <CheckCircle2 className="w-3 h-3" />
+                            En volière
+                          </span>
+                          <span className="flex items-center gap-1">
+                            <Calendar className="w-3 h-3" />
+                            Né le {repro.date_eclosion 
+                              ? new Date(repro.date_eclosion).toLocaleDateString('fr-FR')
+                              : formatDateFr(repro.date_ponte)
+                            }
+                          </span>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-1">
+                        <Button variant="ghost" size="icon" className="text-gray-400 hover:text-gray-600">
+                          <Eye className="w-4 h-4" />
+                        </Button>
+                        <Button variant="ghost" size="icon" className="text-gray-400 hover:text-red-500">
+                          <Trash2 className="w-4 h-4" />
+                        </Button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : repro.nombre_jeunes > 0 ? (
+                <div className="bg-gray-50 rounded-lg p-4 text-center">
+                  <p className="text-lg font-semibold text-gray-900">{repro.nombre_jeunes}</p>
+                  <p className="text-sm text-gray-500">jeune(s) comptabilisé(s)</p>
+                  <p className="text-xs text-gray-400 mt-2">
+                    Détails en cours de synchronisation
+                  </p>
+                </div>
+              ) : (
+                <div className="text-center py-8 text-gray-500">
+                  <Egg className="w-12 h-12 mx-auto mb-3 text-gray-300" />
+                  <p>Aucun jeune enregistré</p>
+                  <Button variant="outline" className="mt-3 gap-2">
+                    <Plus className="w-4 h-4" />
+                    Ajouter le premier jeune
+                  </Button>
+                </div>
+              )}
+            </CardContent>
+          </Card>
         </div>
       </div>
 
       {/* Actions footer */}
       <div className="flex items-center gap-3 pt-4 border-t">
-        <Button variant="outline" className="gap-2">
-          <Egg className="w-4 h-4" />
-          Noter l'éclosion
-        </Button>
+        {!repro.date_eclosion && (
+          <Button variant="outline" className="gap-2">
+            <Egg className="w-4 h-4" />
+            Noter l'éclosion
+          </Button>
+        )}
         <Button variant="outline" className="gap-2">
           <Stethoscope className="w-4 h-4" />
           Ajouter soin/vaccin
