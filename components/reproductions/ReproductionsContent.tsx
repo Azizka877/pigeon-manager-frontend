@@ -50,14 +50,26 @@ function addDays(dateString: string, days: number): Date {
 export default function ReproductionDetailPage() {
   const params = useParams()
   const id = params.id as string
+   console.log('ID from params:', id) // ← Vérifier l'ID
   
-  const { data: repro, isLoading } = useReproduction(id)
+  const { data: repro, isLoading, isError, error } = useReproduction(id)
   const { data: couple } = useCouple(repro?.couple || '')
-
+console.log('Loading:', isLoading)
+  console.log('Error:', error)
+  console.log('Data:', repro)
   if (isLoading) {
     return (
       <div className="flex items-center justify-center h-96">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#00685f]" />
+      </div>
+    )
+  }
+
+    if (isError) {
+    return (
+      <div className="text-center py-12">
+        <p className="text-red-500">Erreur: {error?.message || 'Impossible de charger la reproduction'}</p>
+        <p className="text-gray-500 text-sm mt-2">ID: {id || 'non défini'}</p>
       </div>
     )
   }

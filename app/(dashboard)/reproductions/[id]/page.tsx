@@ -27,10 +27,12 @@ import { cn } from '@/lib/utils'
 export default function ReproductionDetailPage() {
   const params = useParams()
   const id = params.id as string
-  
+  console.log('ID from params:', id)
   const { data: repro, isLoading } = useReproduction(id)
   const { data: couple } = useCouple(repro?.couple || '')
-
+console.log('Loading:', isLoading)
+  console.log('Error:', Error)
+  console.log('Data:', repro)
   if (isLoading) {
     return (
       <div className="flex items-center justify-center h-96">
@@ -39,7 +41,16 @@ export default function ReproductionDetailPage() {
     )
   }
 
-  if (!repro) return <div>Reproduction non trouvée</div>
+ 
+
+  if (!repro) {
+    return (
+      <div className="text-center py-12">
+        <p>Reproduction non trouvée</p>
+        <p className="text-gray-500 text-sm mt-2">ID: {id || 'non défini'}</p>
+      </div>
+    )
+  }
 
   const joursDepuisPonte = Math.floor(
     (new Date().getTime() - new Date(repro.date_ponte).getTime()) / (1000 * 60 * 60 * 24)
