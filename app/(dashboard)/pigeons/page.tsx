@@ -80,7 +80,7 @@ export default function PigeonsPage() {
       {/* Recherche & Filtres */}
       <div className="bg-white rounded-xl border border-gray-200 p-4">
   <div className="flex flex-col sm:flex-row sm:items-start gap-4">
-    <div className="relative w-full  sm:min-w-0  sm:max-w-[200px]">
+    <div className="relative  sm:min-w-0 w-auto  md:max-w-[200px]">
       <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
       <Input
         placeholder="Rechercher..."
