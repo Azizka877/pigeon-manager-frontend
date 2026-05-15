@@ -64,8 +64,8 @@ export default function PigeonsPage() {
   return (
     <div className="space-y-6">
       {/* En-tête */}
-      <div className=" flex-col md:flex-row flex items-center justify-between">
-        <div className='md:mb-3'>
+      <div className=" flex-col lg:flex-row flex items-center justify-between">
+        <div className='mb-3 md:m-0'>
           <h1 className="text-3xl font-bold text-gray-900">Pigeons</h1>
           <p className="text-gray-500 mt-1">Gérez votre registre complet de colombier.</p>
         </div>
@@ -80,13 +80,13 @@ export default function PigeonsPage() {
       {/* Recherche & Filtres */}
       <div className="bg-white rounded-xl border border-gray-200 p-4">
   <div className="flex flex-col sm:flex-row sm:items-start gap-4">
-    <div className="relative w-full sm:w-auto sm:min-w-0 sm:flex-1 sm:max-w-50">
+    <div className="relative w-full sm:w-auto sm:min-w-0 sm:flex-1 sm:max-w-[200px]">
       <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
       <Input
         placeholder="Rechercher..."
         value={recherche}
         onChange={(e) => setRecherche(e.target.value)}
-        className="pl-10 bg-gray-50 border-gray-200 w-full sm:max-w-40"
+        className="pl-10 bg-gray-50 border-gray-200 w-full sm:max-w-[200px]"
       />
     </div>
     <div className="flex gap-2 flex-wrap flex-1">
