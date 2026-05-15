@@ -156,7 +156,7 @@ export const couplesApi = {
 
 
 
-// ✅ AJOUTER SORTIES API
+//  SORTIES API
 export const sortiesApi = {
   list: (): Promise<AxiosResponse<PaginatedResponse<Sortie>>> => apiClient.get('/sorties/'),
   create: (data: Partial<Sortie>): Promise<AxiosResponse<Sortie>> => apiClient.post('/sorties/', data),
@@ -165,7 +165,7 @@ export const sortiesApi = {
   delete: (id: string): Promise<AxiosResponse<void>> => apiClient.delete(`/sorties/${id}/`),
 }
 
-// ✅ AJOUTER REPRODUCTIONS API
+//   REPRODUCTIONS API
 export const reproductionsApi = {
   list: (): Promise<AxiosResponse<PaginatedResponse<Reproduction>>> => apiClient.get('/reproductions/'),
   create: (data: Partial<Reproduction>): Promise<AxiosResponse<Reproduction>> => apiClient.post('/reproductions/', data),

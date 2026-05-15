@@ -3,15 +3,16 @@
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { reproductionsApi } from '@/lib/api/client'
-import type { Reproduction, CreateReproductionPayload } from '@/types'
+import type { Reproduction, CreateReproductionPayload, PaginatedResponse } from '@/types'
+import type { AxiosResponse } from 'axios'
 
 // ─── GET : Liste des reproductions ───
 export function useReproductions() {
-  return useQuery<Reproduction[], Error>({
+  return useQuery<PaginatedResponse<Reproduction>, Error>({
     queryKey: ['reproductions'],
     queryFn: async () => {
-      const response = await reproductionsApi.list()
-      return response.data.results || []
+      const response: AxiosResponse<PaginatedResponse<Reproduction>> = await reproductionsApi.list()
+      return response.data
     },
     staleTime: 1000 * 60 * 2,
   })
@@ -22,14 +23,30 @@ export function useReproduction(id: string | null) {
   return useQuery<Reproduction, Error>({
     queryKey: ['reproduction', id],
     queryFn: async () => {
-      const response = await reproductionsApi.get(id!)
+      const response: AxiosResponse<Reproduction> = await reproductionsApi.get(id!)
       return response.data
     },
     enabled: !!id,
   })
 }
 
-// ─── POST : Créer une reproduction ───
+// ─── POST RAPIDE : Quick ponte depuis Couples ───
+export function useQuickCreateReproduction() {
+  const queryClient = useQueryClient()
+
+  return useMutation<Reproduction, Error, { couple: string; date_ponte: string; nombre_oeufs?: number }>({
+    mutationFn: async (data) => {
+      const response = await reproductionsApi.create(data as any)
+      return response.data
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['reproductions'] })
+      queryClient.invalidateQueries({ queryKey: ['couples'] })
+    },
+  })
+}
+
+// ─── POST COMPLET : Création avec jeunes ───
 export function useCreateReproduction() {
   const queryClient = useQueryClient()
 
@@ -41,6 +58,7 @@ export function useCreateReproduction() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['reproductions'] })
       queryClient.invalidateQueries({ queryKey: ['pigeons'] })
+      queryClient.invalidateQueries({ queryKey: ['couples'] })
     },
   })
 }

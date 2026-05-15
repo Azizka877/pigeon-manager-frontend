@@ -1,7 +1,9 @@
+// app/couples/page.tsx
 'use client'
 
 import { useState } from 'react'
-import { useCouples } from '@/hooks/use-couples'
+import { useCouples, useUpdateCouple } from '@/hooks/use-couples'
+import { useQuickCreateReproduction } from '@/hooks/use-reproductions'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
@@ -9,20 +11,26 @@ import {
   Search, 
   Plus, 
   MoreVertical,
-  Heart
+  Heart,
+  Egg,
+  Check,
+  X
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import Link from 'next/link'
+import { toast } from 'sonner'
 import type { Couple } from '@/types'
 
 type FiltreStatut = 'tous' | 'actif' | 'rompu'
 
 export default function CouplesPage() {
-  const { data: couples, isLoading } = useCouples()
+  const { data: couplesData, isLoading } = useCouples()
   const [recherche, setRecherche] = useState('')
   const [filtreStatut, setFiltreStatut] = useState<FiltreStatut>('tous')
 
-  const couplesFiltres = couples?.filter((couple: Couple) => {
+  const couples = couplesData?.results || []
+
+  const couplesFiltres = couples.filter((couple: Couple) => {
     const maleMatricule = couple.male_details?.matricule || ''
     const femelleMatricule = couple.femelle_details?.matricule || ''
     
@@ -33,7 +41,7 @@ export default function CouplesPage() {
     const matchesStatus = filtreStatut === 'tous' || couple.statut === filtreStatut
     
     return matchesSearch && matchesStatus
-  }) || []
+  })
 
   if (isLoading) {
     return (
@@ -84,10 +92,7 @@ export default function CouplesPage() {
       {/* Grille de cartes */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {couplesFiltres.map((couple: Couple) => (
-          <CarteCouple 
-            key={couple.id} 
-            couple={couple}
-          />
+          <CarteCouple key={couple.id} couple={couple} />
         ))}
       </div>
 
@@ -101,7 +106,12 @@ export default function CouplesPage() {
   )
 }
 
+// ─── CarteCouple avec Quick Ponte ───
 function CarteCouple({ couple }: { couple: Couple }) {
+  const [showConfirm, setShowConfirm] = useState(false)
+  const quickCreate = useQuickCreateReproduction()
+  const updateCouple = useUpdateCouple()
+
   const estActif = couple.statut === 'actif'
   const estSepare = couple.statut === 'rompu'
   
@@ -116,7 +126,33 @@ function CarteCouple({ couple }: { couple: Couple }) {
     })
   }
 
-  // Si pas de détails, afficher un message
+  // 🥚 QUICK PONTE : 1 clic pour noter une ponte aujourd'hui
+  const handleQuickPonte = async () => {
+    const today = new Date().toISOString().split('T')[0]
+    
+    try {
+      // 1. Crée la reproduction
+      await quickCreate.mutateAsync({
+        couple: couple.id,
+        date_ponte: today,
+        nombre_oeufs: 2,
+      })
+      
+      // 2. Met à jour le compteur du couple
+      await updateCouple.mutateAsync({
+        id: couple.id,
+        data: {
+          reproductions_count: (couple.reproductions_count || 0) + 1
+        }
+      })
+      
+      toast.success(`✅ Ponte du ${today} enregistrée pour ${male?.matricule} + ${femelle?.matricule}`)
+      setShowConfirm(false)
+    } catch (err: any) {
+      toast.error(err?.response?.data?.detail || "Erreur lors de l'enregistrement")
+    }
+  }
+
   if (!male || !femelle) {
     return (
       <div className="bg-white rounded-xl border-2 border-gray-200 p-5">
@@ -128,9 +164,10 @@ function CarteCouple({ couple }: { couple: Couple }) {
   return (
     <div className={cn(
       'relative bg-white rounded-xl border border-gray-200 overflow-hidden transition-all hover:shadow-lg',
-      estActif && 'border-l-4 border-l-[#00685f]',  // 🔧 Trait vert à gauche pour actifs
-      estSepare && 'opacity-60 grayscale'             // 🔧 Effet flouté/grisé pour séparés
+      estActif && 'border-l-4 border-l-[#00685f]',
+      estSepare && 'opacity-60 grayscale'
     )}>
+      
       {/* Header */}
       <div className="flex items-center justify-between p-4 pb-2">
         {estActif ? (
@@ -142,13 +179,49 @@ function CarteCouple({ couple }: { couple: Couple }) {
             SÉPARÉ
           </Badge>
         )}
-        <button className="p-1 hover:bg-gray-100 rounded-full">
-          <MoreVertical className="w-4 h-4 text-gray-400" />
-        </button>
+        
+        {/* Actions */}
+        <div className="flex items-center gap-1">
+          {/* 🥚 BOUTON QUICK PONTE */}
+          {estActif && (
+            <>
+              {showConfirm ? (
+                <div className="flex items-center gap-1 bg-[#f5faf8] rounded-lg px-2 py-1">
+                  <span className="text-xs text-[#00685f] font-medium">Aujourd'hui ?</span>
+                  <button 
+                    onClick={handleQuickPonte}
+                    disabled={quickCreate.isPending}
+                    className="p-1 hover:bg-[#00685f] hover:text-white rounded text-[#00685f] transition-colors"
+                  >
+                    <Check className="w-3 h-3" />
+                  </button>
+                  <button 
+                    onClick={() => setShowConfirm(false)}
+                    className="p-1 hover:bg-red-50 rounded text-red-500 transition-colors"
+                  >
+                    <X className="w-3 h-3" />
+                  </button>
+                </div>
+              ) : (
+                <button 
+                  onClick={() => setShowConfirm(true)}
+                  className="p-1.5 hover:bg-[#f5faf8] rounded-full text-[#00685f] transition-colors"
+                  title="Noter une ponte aujourd'hui"
+                >
+                  <Egg className="w-4 h-4" />
+                </button>
+              )}
+            </>
+          )}
+          
+          <button className="p-1.5 hover:bg-gray-100 rounded-full">
+            <MoreVertical className="w-4 h-4 text-gray-400" />
+          </button>
+        </div>
       </div>
 
       {/* Pigeons */}
-      <div className="flex items-center justify-center gap-3 px-4 pb-3">
+      <div className="flex items-center justify-center gap-3 px-4 py-4">
         {/* Mâle */}
         <div className="text-center flex-1">
           <div className="text-blue-600 text-lg mb-1">♂</div>
@@ -196,10 +269,13 @@ function CarteCouple({ couple }: { couple: Couple }) {
             }
           </p>
         </div>
-        <div className="text-right">
+        <Link 
+          href={`/reproductions?couple=${couple.id}`}
+          className="text-right hover:bg-gray-50 p-2 rounded-lg transition-colors"
+        >
           <p className="text-xs text-gray-400 uppercase mb-0.5">Pontes</p>
-          <p className="text-sm font-medium text-gray-700">{couple.reproductions_count || 0}</p>
-        </div>
+          <p className="text-sm font-medium text-[#00685f]">{couple.reproductions_count || 0}</p>
+        </Link>
       </div>
     </div>
   )
