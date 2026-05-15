@@ -255,6 +255,22 @@ const router = useRouter()
               )}
             </div>
           </div>
+          {/* ⬇️ MATRICULE DU PIGEON / COUPLE */}
+{isOccupied && !isCouple && cage.occupation_actuelle?.pigeon && (
+  <div className="text-center mt-1.5">
+    <p className="text-sm font-medium text-gray-700">
+      {cage.occupation_actuelle.pigeon.matricule}
+    </p>
+  </div>
+)}
+
+{isCouple && cage.occupation_actuelle?.couple && (
+  <div className="text-center mt-1.5">
+    <p className="text-sm font-medium text-gray-700">
+      {cage.occupation_actuelle.couple.male_details?.matricule || cage.occupation_actuelle.couple.male} + {cage.occupation_actuelle.couple.femelle_details?.matricule || cage.occupation_actuelle.couple.femelle}
+    </p>
+  </div>
+)}
         </SheetHeader>
 
         {isLoading ? (
