@@ -6,7 +6,9 @@ import type { TokenResponse, User, Cage, PaginatedResponse, Pigeon, Couple,
    ParentsResponse,
    ArbreResponse,
    FreresSoeursResponse,
-   DescendantsResponse} from '@/types'
+   DescendantsResponse,
+   JeuneData,
+   PigeonMini} from '@/types'
 import type { HistoriqueItem } from '@/types'
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api'
 import type { RecentActivityResponse } from '@/types'
@@ -172,6 +174,8 @@ export const reproductionsApi = {
   get: (id: string): Promise<AxiosResponse<Reproduction>> => apiClient.get(`/reproductions/${id}/`),
   update: (id: string, data: Partial<Reproduction>): Promise<AxiosResponse<Reproduction>> => apiClient.put(`/reproductions/${id}/`, data),
   delete: (id: string): Promise<AxiosResponse<void>> => apiClient.delete(`/reproductions/${id}/`),
+  ajouterJeunes: (id: string, jeunes: JeuneData[]): Promise<AxiosResponse<{ message: string; jeunes: PigeonMini[] }>> => 
+    apiClient.post(`/reproductions/${id}/ajouter_jeunes/`, { jeunes }),
 }
 
 export const historiqueApi = {

@@ -3,7 +3,7 @@
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { reproductionsApi } from '@/lib/api/client'
-import type { Reproduction, CreateReproductionPayload, PaginatedResponse } from '@/types'
+import type { Reproduction, CreateReproductionPayload, PaginatedResponse, JeuneData, PigeonMini } from '@/types'
 import type { AxiosResponse } from 'axios'
 
 // ─── GET : Liste des reproductions ───
@@ -88,6 +88,28 @@ export function useDeleteReproduction() {
       await reproductionsApi.delete(id)
     },
     onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['reproductions'] })
+    },
+  })
+}
+
+
+// hooks/use-reproductions.ts
+// hooks/use-reproductions.ts
+export function useAjouterJeunes() {
+  const queryClient = useQueryClient()
+  
+  return useMutation<
+    { message: string; jeunes: PigeonMini[] }, 
+    Error, 
+    { id: string; jeunes: JeuneData[] }
+  >({
+    mutationFn: async ({ id, jeunes }) => {
+      const response = await reproductionsApi.ajouterJeunes(id, jeunes)
+      return response.data
+    },
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({ queryKey: ['reproductions', variables.id] })
       queryClient.invalidateQueries({ queryKey: ['reproductions'] })
     },
   })

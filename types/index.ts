@@ -86,16 +86,25 @@ export interface User {
 // Type pour les reproductions
 export interface Reproduction {
   id: string
-  couple: string                    // ← ID du couple (string)
+  couple: string
+  couple_details?: {
+    id: string
+    male: PigeonMini
+    femelle: PigeonMini
+  }
   date_ponte: string
-  date_eclosion: string | null
+  date_eclosion?: string
+  date_sevrage?: string | null
   nombre_oeufs: number
+  nombre_eclos: number
   nombre_jeunes: number
-  notes: string | null
+  jeunes: string[]
+  jeunes_details: PigeonMini[]  // ← Maintenant peuplé !
+  statut: 'incubation' | 'eclosion' | 'sevrage' | 'termine'
+  statut_display: string
+  notes?: string
   created_at: string
   updated_at: string
-  jeunes: string[]                  // ← Tableau d'IDs (pas d'objets Pigeon)
-
 }
 export interface TokenResponse {
   access: string
@@ -256,6 +265,12 @@ export interface JeuneFormData {
   matricule: string
   sexe: 'M' | 'F'
   couleur: string
+}
+export interface JeuneData {
+  matricule: string
+  sexe: 'M' | 'F'
+  couleur?: string
+  race?: string
 }
 
 export interface CreateReproductionPayload {
