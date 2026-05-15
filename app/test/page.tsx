@@ -11,7 +11,6 @@ export default function TestPage() {
     const fetchCages = async () => {
       const token = localStorage.getItem('access_token')
       
-      console.log('🔵 Token:', token)
       
       try {
         const response = await fetch('http://localhost:8000/api/cages/', {
@@ -21,10 +20,8 @@ export default function TestPage() {
           },
         })
         
-        console.log('🔵 Response status:', response.status)
         
         const json = await response.json()
-        console.log('🔵 Data:', json)
         
         setData(json)
       } catch (err: any) {

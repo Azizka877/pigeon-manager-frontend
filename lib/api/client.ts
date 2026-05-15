@@ -135,7 +135,6 @@ export const pigeonEventsApi = {
 // Cages API
 export const cagesApi = {
   list: (): Promise<AxiosResponse<PaginatedResponse<Cage>>> => {
-    console.log('📡 [cagesApi.list] Appel API...')
     return apiClient.get('/cages/')
   },
   create: (data: Partial<Cage>): Promise<AxiosResponse<Cage>> => apiClient.post('/cages/', data),

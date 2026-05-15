@@ -73,13 +73,11 @@ const router = useRouter()
  const pigeonsDisponibles = useMemo(() => {
   if (!pigeons || !allCages) return []
   
-  console.log("🔴 CALCUL pigeonsDisponibles - allCages length:", allCages.length)
   
   const pigeonsEnCage = new Set<string>()
   allCages.forEach((c) => {
     if (!c.occupation_actuelle) return
     if (c.occupation_actuelle.type === 'seul' && c.occupation_actuelle.pigeon) {
-      console.log("🔴 PIGEON EN CAGE:", c.occupation_actuelle.pigeon.id, c.occupation_actuelle.pigeon.matricule)
       pigeonsEnCage.add(c.occupation_actuelle.pigeon.id)
     }
     if (c.occupation_actuelle.type === 'couple' && c.occupation_actuelle.couple) {
@@ -87,13 +85,11 @@ const router = useRouter()
       if (c.occupation_actuelle.couple.femelle) pigeonsEnCage.add(c.occupation_actuelle.couple.femelle)
     }
   })
-  
-  console.log("🔴 SET pigeonsEnCage:", Array.from(pigeonsEnCage))
-  console.log("🔴 ALL PIGEONS:", pigeons.map(p => ({ id: p.id, matricule: p.matricule })))
+ 
   
   const disponibles = pigeons.filter((p) => p.statut === 'actif' && !pigeonsEnCage.has(p.id))
   
-  console.log("🔴 RESULTAT disponibles:", disponibles.map(p => p.matricule))
+  
   
   return disponibles
 }, [pigeons, allCages])
@@ -152,17 +148,10 @@ const router = useRouter()
   const handleLiberer = async () => {
   if (!selectedCage) return
   try {
-    console.log("🔴 LIBERER - cageId:", selectedCage)
     const result = await libererMutation.mutateAsync(selectedCage)
-    console.log("🔴 LIBERER - succès:", result)
     toast.success('Cage libérée avec succès')
     handleClose()
   } catch (err: any) {
-    console.error("🔴 LIBERER - ERREUR COMPLÈTE:", err)
-    console.error("🔴 LIBERER - err.response:", err.response)
-    console.error("🔴 LIBERER - err.response?.data:", err.response?.data)
-    console.error("🔴 LIBERER - err.response?.status:", err.response?.status)
-    console.error("🔴 LIBERER - err.message:", err.message)
     toast.error(`Erreur libération: ${err.response?.data?.detail || err.message || 'Inconnue'}`)
   }
 }
