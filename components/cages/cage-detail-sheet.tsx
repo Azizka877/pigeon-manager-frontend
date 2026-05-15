@@ -107,7 +107,7 @@ const router = useRouter()
         couplesEnCage.add(c.occupation_actuelle.couple.id)
       }
     })
-    return couples.filter((c) => c.statut === 'actif' && !couplesEnCage.has(c.id))
+    return couples.results?.filter((c) => c.statut === 'actif' && !couplesEnCage.has(c.id))
   }, [couples, allCages])
 
 
