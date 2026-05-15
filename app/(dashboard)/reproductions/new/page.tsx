@@ -31,7 +31,7 @@ export default function NouvelleReproductionPage() {
     { matricule: '', sexe: 'F', couleur: '' },
   ])
 
-  const coupleSelectionne = couples?.find(c => c.id === coupleId)
+  const coupleSelectionne = couples?.results?.find(c => c.id === coupleId)
 
   const addJeune = () => {
     setJeunes((prev: JeuneFormData[]) => [
@@ -81,7 +81,7 @@ export default function NouvelleReproductionPage() {
     }
   }
 
-  const couplesActifs = couples?.filter(c => c.statut === 'actif') || []
+  const couplesActifs = couples?.results?.filter(c => c.statut === 'actif') || []
 
   return (
     <div className="max-w-4xl mx-auto">
