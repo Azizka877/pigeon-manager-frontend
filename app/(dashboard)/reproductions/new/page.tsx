@@ -26,7 +26,6 @@ export default function NouvelleReproductionPage() {
   const [nombreOeufs, setNombreOeufs] = useState(2)
   const [notes, setNotes] = useState('')
 
-  // ✅ CORRIGÉ : useState sans double <
   const [jeunes, setJeunes] = useState<JeuneFormData[]>([
     { matricule: '', sexe: 'M', couleur: '' },
     { matricule: '', sexe: 'F', couleur: '' },
@@ -34,7 +33,6 @@ export default function NouvelleReproductionPage() {
 
   const coupleSelectionne = couples?.find(c => c.id === coupleId)
 
-  // ✅ CORRIGÉ : type explicite sur le paramètre
   const addJeune = () => {
     setJeunes((prev: JeuneFormData[]) => [
       ...prev,
@@ -62,11 +60,9 @@ export default function NouvelleReproductionPage() {
       return
     }
 
-    // Valider les jeunes
     const jeunesValides = jeunes.filter((j: JeuneFormData) => j.matricule.trim())
     
     try {
-      // ✅ CORRIGÉ : Payload typé correctement
       const payload = {
         couple: coupleId,
         date_ponte: datePonte,
@@ -104,11 +100,113 @@ export default function NouvelleReproductionPage() {
 
       <form onSubmit={handleSubmit}>
         <Card className="p-6 space-y-6">
-          {/* ... couple selection ... */}
+          {/* ═══════════════════════════════════════════
+              SECTION 1 : SÉLECTION DU COUPLE
+          ═══════════════════════════════════════════ */}
+          <section>
+            <div className="flex items-center gap-2 mb-4 text-[#00685f]">
+              <Egg className="w-5 h-5" />
+              <h2 className="text-lg font-semibold">Couple</h2>
+            </div>
 
-          {/* ... ponte details ... */}
+            <div className="space-y-2">
+              <Label htmlFor="couple">
+                Sélectionner un couple <span className="text-red-500">*</span>
+              </Label>
+              <select
+                id="couple"
+                className="w-full h-10 px-3 rounded-md border border-gray-200 bg-white"
+                value={coupleId}
+                onChange={e => setCoupleId(e.target.value)}
+                required
+              >
+                <option value="">Choisir un couple actif...</option>
+                {couplesActifs.map(c => (
+                  <option key={c.id} value={c.id}>
+                    {c.male_details?.matricule || 'Inconnu'} + {c.femelle_details?.matricule || 'Inconnue'}
+                  </option>
+                ))}
+              </select>
+            </div>
 
-          {/* Pigeonneaux */}
+            {coupleSelectionne && (
+              <div className="mt-3 p-3 bg-[#f5faf8] rounded-lg flex items-center gap-3">
+                <div className="text-blue-600 font-bold">♂ {coupleSelectionne.male_details?.matricule}</div>
+                <span className="text-gray-400">+</span>
+                <div className="text-pink-600 font-bold">♀ {coupleSelectionne.femelle_details?.matricule}</div>
+              </div>
+            )}
+          </section>
+
+          <hr className="border-gray-200" />
+
+          {/* ═══════════════════════════════════════════
+              SECTION 2 : DÉTAILS DE LA PONTE
+          ═══════════════════════════════════════════ */}
+          <section>
+            <div className="flex items-center gap-2 mb-4 text-[#00685f]">
+              <Egg className="w-5 h-5" />
+              <h2 className="text-lg font-semibold">Détails de la ponte</h2>
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="date_ponte">
+                  Date de ponte <span className="text-red-500">*</span>
+                </Label>
+                <Input
+                  id="date_ponte"
+                  type="date"
+                  value={datePonte}
+                  onChange={e => setDatePonte(e.target.value)}
+                  required
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="date_eclosion">
+                  Date d'éclosion <span className="text-gray-400">(optionnel)</span>
+                </Label>
+                <Input
+                  id="date_eclosion"
+                  type="date"
+                  value={dateEclosion}
+                  onChange={e => setDateEclosion(e.target.value)}
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="nombre_oeufs">
+                  Nombre d'œufs
+                </Label>
+                <Input
+                  id="nombre_oeufs"
+                  type="number"
+                  min={1}
+                  max={4}
+                  value={nombreOeufs}
+                  onChange={e => setNombreOeufs(parseInt(e.target.value) || 2)}
+                />
+              </div>
+            </div>
+
+            <div className="space-y-2 mt-4">
+              <Label htmlFor="notes">Notes</Label>
+              <Textarea
+                id="notes"
+                placeholder="Notes sur cette ponte..."
+                value={notes}
+                onChange={e => setNotes(e.target.value)}
+                rows={3}
+              />
+            </div>
+          </section>
+
+          <hr className="border-gray-200" />
+
+          {/* ═══════════════════════════════════════════
+              SECTION 3 : PIGEONNEAUX NÉS
+          ═══════════════════════════════════════════ */}
           <section>
             <div className="flex items-center gap-2 mb-4 text-[#00685f]">
               <Baby className="w-5 h-5" />
@@ -170,7 +268,9 @@ export default function NouvelleReproductionPage() {
             </div>
           </section>
 
-          {/* Actions */}
+          {/* ═══════════════════════════════════════════
+              SECTION 4 : ACTIONS
+          ═══════════════════════════════════════════ */}
           <div className="flex justify-end gap-3 pt-4">
             <Link href="/reproductions">
               <Button type="button" variant="outline">
