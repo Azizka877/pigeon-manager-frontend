@@ -1,19 +1,30 @@
+// app/(auth)/login/page.tsx
 'use client'
 
-import { useState } from 'react'
-import { useRouter } from 'next/navigation'
+import { useState, useEffect } from 'react'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { useAuthStore } from '@/stores/auth-store'
 import { Bird, AlertCircle } from 'lucide-react'
 import Link from 'next/link'
 
 export default function LoginPage() {
   const router = useRouter()
-  const { login } = useAuthStore()
+  const searchParams = useSearchParams()
+  const { login, isAuthenticated, isLoading } = useAuthStore()
+  
   const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
   const [rememberMe, setRememberMe] = useState(false)
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
+
+  // Si déjà connecté, redirige
+  useEffect(() => {
+    if (isAuthenticated && !isLoading) {
+      const redirect = searchParams.get('redirect') || '/dashboard'
+      router.push(redirect)
+    }
+  }, [isAuthenticated, isLoading, router, searchParams])
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -22,9 +33,9 @@ export default function LoginPage() {
     
     try {
       await login(username, password)
-      router.push('/cages')
+      const redirect = searchParams.get('redirect') || '/dashboard'
+      router.push(redirect)
     } catch (err: any) {
-      console.error('Login error:', err)
       const message = err?.response?.data?.detail 
         || err?.response?.data?.non_field_errors?.[0]
         || err?.message 
@@ -125,7 +136,7 @@ export default function LoginPage() {
           </button>
         </form>
 
-        {/* Message informatif — remplace le lien "Créer un compte" */}
+        {/* Message informatif */}
         <div className="mt-6 pt-5 border-t border-gray-100 text-center">
           <p className="text-sm text-gray-500">
             Accès réservé aux administrateurs
