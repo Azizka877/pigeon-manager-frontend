@@ -22,9 +22,11 @@ export default function LoginPage() {
   useEffect(() => {
     if (isAuthenticated && !isLoading) {
       const redirect = searchParams.get('redirect') || '/dashboard'
-      router.push(redirect)
+      router.replace(redirect)
     }
   }, [isAuthenticated, isLoading, router, searchParams])
+  
+  if(!isAuthenticated) return null
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault()
