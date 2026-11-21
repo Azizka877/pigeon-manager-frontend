@@ -1,26 +1,5 @@
 'use client'
 
-// ─────────────────────────────────────────────────────────────────────────────
-// app/(dashboard)/profile/page.tsx — PROFIL & PARAMÈTRES, design
-// ultra-moderne réaliste cohérent avec les registres : HERO D'IDENTITÉ en
-// dégradé signature (initiales, @username, e-mail, ancienneté, filigrane de
-// pigeon en vol), onglets en pilules segmentées, bannière PHOTO RÉALISTE du
-// colombier (public/colombier-banniere.jpg — la scène SVG dessinée faisait
-// « icône » à côté des vraies photos de pigeons, elle est remplacée par un
-// vrai loft au toit teal avec légendes pilotées par les données réelles :
-// nom du colombier, ville/pays, GPS), jauge de force de mot de passe
-// RÉELLEMENT calculée,
-// factures avec statuts traduits et € formatés, notifications PERSISTÉES en
-// localStorage (l'ancienne version les perdait au rechargement).
-// Corrige au passage : le faux plan « Master Breeder » inventé quand l'API de
-// facturation n'existe pas (état vide honnête à la place), le bouton Maps
-// inerte (ouvre désormais Google Maps), le pays limité à 5 choix (option
-// « Autre » en saisie libre), le type User aligné sur le sérialiseur réel.
-// Logique métier inchangée : les mêmes 8 hooks de use-auth.ts, mêmes
-// validations (8 caractères, confirmation), même confirmation de suppression
-// par saisie du nom d'utilisateur.
-// ─────────────────────────────────────────────────────────────────────────────
-
 import { useEffect, useMemo, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
@@ -495,15 +474,12 @@ export default function ProfilePage() {
           {/* ══ ONGLET COLOMBIER ══ */}
           {activeTab === 'colombier' && (
             <Card className="overflow-hidden rounded-3xl border-outline-variant">
-              {/* Bannière : PHOTO du colombier (loft bois, toit teal, pigeons réels).
-                  Le dégradé de fond sert de repli si l'image n'est pas servie. */}
               <div className="relative h-44 bg-gradient-to-b from-[#eaf4f1] to-white sm:h-52">
                 <img
                   src="/colombier-banniere.jpg"
                   alt="Le colombier — loft en bois au toit teal, pigeons sur la planche d'envol"
                   className="absolute inset-0 h-full w-full object-cover object-[50%_55%]"
                 />
-                {/* Voile de lisibilité en haut + fondu vers la carte de configuration */}
                 <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-black/40 via-transparent to-transparent" />
                 <div className="pointer-events-none absolute inset-x-0 bottom-0 h-10 bg-gradient-to-t from-white/95 to-transparent" />
 

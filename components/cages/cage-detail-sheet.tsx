@@ -291,15 +291,15 @@ export function CageDetailSheet() {
                     <LignePigeon
                       imageSrc={getPigeonImage(
                         cage.occupation_actuelle.pigeon.id,
-                        cage.occupation_actuelle.pigeon.sexe
+                        cage.occupation_actuelle.pigeon.sexe ?? 'M'
                       )}
                       libelle={cage.occupation_actuelle.pigeon.sexe === 'M' ? 'Mâle' : 'Femelle'}
                       libelleClasse={
                         cage.occupation_actuelle.pigeon.sexe === 'M' ? 'text-blue-600' : 'text-pink-500'
                       }
-                      matricule={cage.occupation_actuelle.pigeon.matricule}
-                      race={cage.occupation_actuelle.pigeon.race}
-                      age={cage.occupation_actuelle.pigeon.age}
+                      matricule={cage.occupation_actuelle.pigeon.matricule ?? ''}
+                      race={cage.occupation_actuelle.pigeon.race ?? 'Voyageur'}
+                      age={cage.occupation_actuelle.pigeon.age ?? undefined}
                     />
                   )}
 
@@ -308,14 +308,16 @@ export function CageDetailSheet() {
                       <LignePigeon
                         imageSrc={getPigeonImage(
                           cage.occupation_actuelle.couple.male_details?.id ||
-                            cage.occupation_actuelle.couple.male,
+                          cage.occupation_actuelle.couple.male ||
+                          '',
                           'M'
                         )}
                         libelle="Mâle"
                         libelleClasse="text-blue-600"
                         matricule={
                           cage.occupation_actuelle.couple.male_details?.matricule ||
-                          cage.occupation_actuelle.couple.male
+                          cage.occupation_actuelle.couple.male ||
+                          ''
                         }
                         race={cage.occupation_actuelle.couple.male_details?.race || 'Voyageur'}
                         age={cage.occupation_actuelle.couple.male_details?.age ?? 2}
@@ -323,14 +325,15 @@ export function CageDetailSheet() {
                       <LignePigeon
                         imageSrc={getPigeonImage(
                           cage.occupation_actuelle.couple.femelle_details?.id ||
-                            cage.occupation_actuelle.couple.femelle,
-                          'F'
+                          cage.occupation_actuelle.couple.femelle ||
+                          '',
+                        'F'
                         )}
                         libelle="Femelle"
                         libelleClasse="text-pink-500"
                         matricule={
                           cage.occupation_actuelle.couple.femelle_details?.matricule ||
-                          cage.occupation_actuelle.couple.femelle
+                          cage.occupation_actuelle.couple.femelle || ''
                         }
                         race={cage.occupation_actuelle.couple.femelle_details?.race || 'Voyageur'}
                         age={cage.occupation_actuelle.couple.femelle_details?.age ?? 1}

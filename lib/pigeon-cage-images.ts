@@ -50,7 +50,7 @@ function choisir(banque: PhotoPigeon[], id: string, decalage = 0): PhotoPigeon {
 // ── Sélections stables par pigeon ───────────────────────────────────────────
 
 /** Photo du pigeon seul (banque selon le sexe, stable par id) */
-export function photoPigeonSeul(id?: string | null, sexe?: 'M' | 'F'): PhotoPigeon | null {
+export function photoPigeonSeul(id?: string | null, sexe?: 'M' | 'F' | null): PhotoPigeon | null {
   if (!id) return null
   return choisir(sexe === 'F' ? BANQUE_PERCHOIR_F : BANQUE_PERCHOIR_M, id)
 }
@@ -75,6 +75,7 @@ export function photosPigeonCouple(
 }
 
 /** Photo du pigeon en vol qui atterrit sur le faîte (stable par cage) */
+
 export function photoPigeonToit(idCage?: string | null): PhotoPigeon | null {
   if (!idCage) return null
   return choisir(BANQUE_VOL, `toit-${idCage}`)

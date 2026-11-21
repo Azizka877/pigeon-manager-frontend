@@ -72,6 +72,10 @@ export interface Cage {
   capacite?: number | null
   statut?: string | null
   date_creation?: string | null
+  superficie?: string | null
+  position_x?: number | null
+  position_y?: number | null
+  est_active?: boolean
   occupation_actuelle?:
     | {
         type: 'seul' | 'couple'
