@@ -315,13 +315,21 @@ export default function LoginForm() {
 
           <div className="p-8 md:p-10">
             {/* marque (visible aussi sur mobile) */}
-            <div className="mb-8 flex flex-col items-center">
-              <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-xl bg-[#00685f] text-white shadow-lg shadow-[#00685f]/30">
-                <PigeonSVG width={34} />
-              </div>
-              <h2 className="text-2xl font-semibold tracking-tight text-gray-900">PigeonManager</h2>
-              <p className="mt-1.5 text-sm text-gray-500">Connectez-vous pour gérer votre colombier</p>
-            </div>
+           <div className="relative mb-4 h-16 w-16">
+  <div className="absolute -inset-1.5 rounded-2xl bg-gradient-to-br from-[#00685f] via-emerald-300/70 to-[#01352f] opacity-60 blur-md" />
+  <div className="relative h-16 w-16 overflow-hidden rounded-2xl bg-[#00685f] shadow-lg shadow-[#00685f]/40 ring-2 ring-white">
+    <img
+      src="/pigeon-logo.jpg"
+      alt="PigeonManager"
+      draggable={false}
+      className="h-full w-full object-cover object-[50%_42%]"
+    />
+    <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-[#00685f]/35 via-transparent to-transparent" />
+  </div>
+  <span className="absolute -bottom-1.5 -right-1.5 flex h-6 w-6 items-center justify-center rounded-full bg-white shadow-md ring-1 ring-[#00685f]/25">
+    <Feather className="h-3 w-3 text-[#00685f]" />
+  </span>
+</div>
 
             {/* erreur */}
             {error && (
