@@ -1,5 +1,6 @@
 // lib/api/client.ts
 import axios, { AxiosResponse } from 'axios'
+import { clearTokenCookie, setTokenCookie } from '@/lib/auth-cookie'
 import type { TokenResponse, User, Cage, PaginatedResponse, Pigeon, Couple,
    Reproduction, Sortie , ColombierConfig, Plan, Invoice, 
    PigeonEvent,
@@ -35,43 +36,47 @@ apiClient.interceptors.response.use(
   (response) => response,
   async (error) => {
     const originalRequest = error.config
-    
+
     if (error.response?.status === 401 && !originalRequest._retry) {
       originalRequest._retry = true
       const refreshToken = localStorage.getItem('refresh_token')
-      
-      if (!refreshToken) {
+
+      // Déconnexion forcée : purge totale (tokens + store persisté + cookie)
+      const deconnexionForcee = () => {
         localStorage.removeItem('access_token')
         localStorage.removeItem('refresh_token')
+        localStorage.removeItem('auth-storage') // reset du store persisté, sinon boucle
+        clearTokenCookie()
         if (typeof window !== 'undefined') {
-          window.location.href = '/login'
+          const chemin = window.location.pathname
+          window.location.href =
+            chemin === '/login' ? '/login' : `/login?redirect=${encodeURIComponent(chemin)}`
         }
+      }
+
+      if (!refreshToken) {
+        deconnexionForcee()
         return Promise.reject(error)
       }
-      
+
       try {
         const { data } = await axios.post<TokenResponse>(
           `${API_URL}/token/refresh/`,
           { refresh: refreshToken }
         )
-        
+
         localStorage.setItem('access_token', data.access)
+        setTokenCookie(data.access) // le cookie suit le nouveau token
         originalRequest.headers.Authorization = `Bearer ${data.access}`
         return apiClient(originalRequest)
       } catch (refreshError) {
-        localStorage.removeItem('access_token')
-        localStorage.removeItem('refresh_token')
-        if (typeof window !== 'undefined') {
-          window.location.href = '/login'
-        }
+        deconnexionForcee()
         return Promise.reject(refreshError)
       }
     }
     return Promise.reject(error)
   }
 )
-
-// lib/api/client.ts — AJOUTER ces endpoints
 
 // Auth API — COMPLET
 export const authApi = {

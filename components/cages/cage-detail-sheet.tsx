@@ -1,4 +1,3 @@
-// components/cages/cage-detail-sheet.tsx
 'use client'
 
 import { useCageStore } from '@/stores/cage-store'
@@ -34,7 +33,6 @@ import {
   Users,
   Trash2,
   FileText,
-  X,
   ChevronRight,
 } from 'lucide-react'
 import { useState, useMemo } from 'react'
@@ -44,6 +42,42 @@ import { getPigeonImage } from '@/lib/pigeon-images'
 import { HistoriqueItem } from '@/types'
 import { useRouter } from 'next/navigation'
 
+// Carte pigeon réutilisable (seul / mâle / femelle)
+function LignePigeon({
+  imageSrc,
+  libelle,
+  libelleClasse,
+  matricule,
+  race,
+  age,
+}: {
+  imageSrc: string
+  libelle: string
+  libelleClasse: string
+  matricule: string
+  race: string
+  age?: number
+}) {
+  return (
+    <div className="flex gap-3 rounded-xl border border-outline-variant/60 bg-surface-container-low p-3 shadow-sm">
+      <div className="h-20 w-20 flex-shrink-0 overflow-hidden rounded-lg bg-surface-container-high">
+        <img src={imageSrc} alt={matricule} className="h-full w-full object-cover" />
+      </div>
+      <div className="min-w-0 flex-1">
+        <p className={cn('text-sm font-semibold', libelleClasse)}>{libelle}</p>
+        <p className="text-sm text-on-surface-variant">
+          Matricule : <span className="font-medium text-on-surface">{matricule}</span>
+        </p>
+        <p className="text-sm text-on-surface-variant">Race : {race}</p>
+        {age !== undefined && (
+          <p className="text-sm text-on-surface-variant">
+            Âge : {age} {age > 1 ? 'ans' : 'an'}
+          </p>
+        )}
+      </div>
+    </div>
+  )
+}
 
 export function CageDetailSheet() {
   const { selectedCage, setSelectedCage } = useCageStore()
@@ -53,12 +87,12 @@ export function CageDetailSheet() {
   const { data: couples } = useCouples()
   const libererMutation = useLibererCage()
   const occuperMutation = useOccuperCage()
-const { data: historiqueAPI } = useCageHistory(selectedCage || '')
+  const { data: historiqueAPI } = useCageHistory(selectedCage || '')
   const [selectedPigeon, setSelectedPigeon] = useState('')
   const [selectedCouple, setSelectedCouple] = useState('')
   const [showAffecterPigeon, setShowAffecterPigeon] = useState(false)
   const [showAffecterCouple, setShowAffecterCouple] = useState(false)
-const router = useRouter()
+  const router = useRouter()
   const isOpen = !!selectedCage
 
   const handleClose = () => {
@@ -70,29 +104,23 @@ const router = useRouter()
   }
 
   // ─── FILTRAGE DES PIGEONS DISPONIBLES ─────────────────────────────
- const pigeonsDisponibles = useMemo(() => {
-  if (!pigeons || !allCages) return []
-  
-  
-  const pigeonsEnCage = new Set<string>()
-  allCages.forEach((c) => {
-    if (!c.occupation_actuelle) return
-    if (c.occupation_actuelle.type === 'seul' && c.occupation_actuelle.pigeon) {
-      pigeonsEnCage.add(c.occupation_actuelle.pigeon.id)
-    }
-    if (c.occupation_actuelle.type === 'couple' && c.occupation_actuelle.couple) {
-      if (c.occupation_actuelle.couple.male) pigeonsEnCage.add(c.occupation_actuelle.couple.male)
-      if (c.occupation_actuelle.couple.femelle) pigeonsEnCage.add(c.occupation_actuelle.couple.femelle)
-    }
-  })
- 
-  
-  const disponibles = pigeons.filter((p) => p.statut === 'actif' && !pigeonsEnCage.has(p.id))
-  
-  
-  
-  return disponibles
-}, [pigeons, allCages])
+  const pigeonsDisponibles = useMemo(() => {
+    if (!pigeons || !allCages) return []
+
+    const pigeonsEnCage = new Set<string>()
+    allCages.forEach((c) => {
+      if (!c.occupation_actuelle) return
+      if (c.occupation_actuelle.type === 'seul' && c.occupation_actuelle.pigeon) {
+        pigeonsEnCage.add(c.occupation_actuelle.pigeon.id)
+      }
+      if (c.occupation_actuelle.type === 'couple' && c.occupation_actuelle.couple) {
+        if (c.occupation_actuelle.couple.male) pigeonsEnCage.add(c.occupation_actuelle.couple.male)
+        if (c.occupation_actuelle.couple.femelle) pigeonsEnCage.add(c.occupation_actuelle.couple.femelle)
+      }
+    })
+
+    return pigeons.filter((p) => p.statut === 'actif' && !pigeonsEnCage.has(p.id))
+  }, [pigeons, allCages])
 
   // ─── FILTRAGE DES COUPLES ACTIFS ──────────────────────────────────
   const couplesActifs = useMemo(() => {
@@ -103,9 +131,8 @@ const router = useRouter()
         couplesEnCage.add(c.occupation_actuelle.couple.id)
       }
     })
-    return couples.results?.filter((c) => c.statut === 'actif' && !couplesEnCage.has(c.id))
+    return couples.results?.filter((c) => c.statut === 'actif' && !couplesEnCage.has(c.id)) ?? []
   }, [couples, allCages])
-
 
   const handleVoirHistorique = () => {
     if (selectedCage) {
@@ -113,270 +140,201 @@ const router = useRouter()
       handleClose()
     }
   }
-  // ─── HISTORIQUE MOCK (à remplacer par vraie API) ──────────────────
-   const historique = useMemo(() => {
-  const items: HistoriqueItem[] = []
-  
-  // Occupation actuelle
-  if (cage?.occupation_actuelle?.date_debut) {
-    items.push({
-      id: 'current',
-      type_action: 'occupation',
-      description: cage.occupation_actuelle.type === 'couple' 
-        ? 'Couple affecté' 
-        : 'Pigeon affecté',
-      date_action: cage.occupation_actuelle.date_debut,
-      date_formatee: new Date(cage.occupation_actuelle.date_debut).toLocaleDateString('fr-FR'),
-      utilisateur_nom: '',
-      metadata: {},
-    })
-  }
-  
-  // Historique depuis l'API
-  if (historiqueAPI) {
-    items.push(...historiqueAPI)
-  }
-  
-  return items.sort((a, b) => 
-    new Date(b.date_action).getTime() - new Date(a.date_action).getTime()
-  )
-}, [cage, historiqueAPI])
 
+  // ─── HISTORIQUE : occupation actuelle + API ───────────────────────
+  const historique = useMemo(() => {
+    const items: HistoriqueItem[] = []
 
+    if (cage?.occupation_actuelle?.date_debut) {
+      items.push({
+        id: 'current',
+        type_action: 'occupation',
+        description:
+          cage.occupation_actuelle.type === 'couple' ? 'Couple affecté' : 'Pigeon affecté',
+        date_action: cage.occupation_actuelle.date_debut,
+        date_formatee: new Date(cage.occupation_actuelle.date_debut).toLocaleDateString('fr-FR'),
+        utilisateur_nom: '',
+        metadata: {},
+      })
+    }
 
+    if (historiqueAPI) {
+      items.push(...historiqueAPI)
+    }
+
+    return items.sort(
+      (a, b) => new Date(b.date_action).getTime() - new Date(a.date_action).getTime()
+    )
+  }, [cage, historiqueAPI])
 
   const handleLiberer = async () => {
-  if (!selectedCage) return
-  try {
-    const result = await libererMutation.mutateAsync(selectedCage)
-    toast.success('Cage libérée avec succès')
-    handleClose()
-  } catch (err: any) {
-    toast.error(`Erreur libération: ${err.response?.data?.detail || err.message || 'Inconnue'}`)
+    if (!selectedCage) return
+    try {
+      await libererMutation.mutateAsync(selectedCage)
+      toast.success('Cage libérée avec succès')
+      handleClose()
+    } catch (err: any) {
+      toast.error(`Erreur libération: ${err.response?.data?.detail || err.message || 'Inconnue'}`)
+    }
   }
-}
 
+  const handleAffecterPigeon = async () => {
+    if (!selectedCage || !selectedPigeon) return
 
- const handleAffecterPigeon = async () => {
-  if (!selectedCage || !selectedPigeon) return
-  
-  try {
-    await occuperMutation.mutateAsync({
-      cage_id: selectedCage,
-      pigeon_id: selectedPigeon,
-      type_occupation: 'seul' as const,
-    })
-    
-    toast.success('Pigeon affecté avec succès')
-    
-    // ✅ Ferme le Dialog ET reset le state
-    setShowAffecterPigeon(false)
-    setSelectedPigeon('')  // Reset la sélection
-    
-    // ✅ Force la fermeture complète
-    handleClose()  // Ferme aussi le Sheet si besoin
-    
-  } catch (err: any) {
-    toast.error(`Erreur affectation: ${JSON.stringify(err.response?.data) || err.message || 'Inconnue'}`)
+    try {
+      await occuperMutation.mutateAsync({
+        cage_id: selectedCage,
+        pigeon_id: selectedPigeon,
+        type_occupation: 'seul' as const,
+      })
+
+      toast.success('Pigeon affecté avec succès')
+      setShowAffecterPigeon(false)
+      setSelectedPigeon('')
+      handleClose()
+    } catch (err: any) {
+      toast.error(`Erreur affectation: ${JSON.stringify(err.response?.data) || err.message || 'Inconnue'}`)
+    }
   }
-}
 
+  const handleAffecterCouple = async () => {
+    if (!selectedCage || !selectedCouple) return
 
+    try {
+      await occuperMutation.mutateAsync({
+        cage_id: selectedCage,
+        couple_id: selectedCouple,
+        type_occupation: 'couple' as const,
+      })
 
-
- const handleAffecterCouple = async () => {
-  if (!selectedCage || !selectedCouple) return
-  
-  try {
-    await occuperMutation.mutateAsync({
-      cage_id: selectedCage,
-      couple_id: selectedCouple,
-      type_occupation: 'couple' as const,
-    })
-    
-    toast.success('Couple affecté avec succès')
-    
-    // ✅ Ferme le Dialog ET reset le state
-    setShowAffecterCouple(false)
-    setSelectedCouple('')  // Reset la sélection
-    
-    // ✅ Force la fermeture complète
-    handleClose()
-    
-  } catch (err: any) {
-    toast.error(`Erreur affectation: ${JSON.stringify(err.response?.data) || err.message || 'Inconnue'}`)
+      toast.success('Couple affecté avec succès')
+      setShowAffecterCouple(false)
+      setSelectedCouple('')
+      handleClose()
+    } catch (err: any) {
+      toast.error(`Erreur affectation: ${JSON.stringify(err.response?.data) || err.message || 'Inconnue'}`)
+    }
   }
-}
-
-
-
 
   const isOccupied = !!cage?.occupation_actuelle
   const isCouple = cage?.occupation_actuelle?.type === 'couple'
 
+  const styleStatut = !isOccupied
+    ? 'bg-emerald-100 text-emerald-700'
+    : isCouple
+      ? 'bg-amber-100 text-amber-700'
+      : 'bg-sky-100 text-sky-700'
+  const dotStatut = !isOccupied ? 'bg-emerald-500' : isCouple ? 'bg-amber-500' : 'bg-sky-500'
+
   return (
     <Sheet open={isOpen} onOpenChange={(open) => !open && handleClose()}>
-      <SheetContent 
-        side="right" 
-        className="w-full sm:max-w-[420px] p-0 overflow-hidden flex flex-col bg-white"
+      <SheetContent
+        side="right"
+        className="flex w-full flex-col overflow-hidden bg-surface p-0 sm:max-w-[420px]"
       >
         {/* ─── HEADER ─────────────────────────────────────────────── */}
-        <SheetHeader className="relative pt-6 pb-2 px-6 border-b-0">
-         
-
-          <SheetTitle className="text-center text-2xl font-bold text-gray-900">
+        <SheetHeader className="relative px-6 pb-4 pt-6">
+          <SheetTitle className="text-center text-2xl font-bold text-on-surface">
             Cage {cage?.numero}
           </SheetTitle>
 
-          <div className="flex justify-center mt-2">
-            <div className={cn(
-              'inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-sm font-medium',
-              !isOccupied && 'bg-green-100 text-green-700',
-              isOccupied && !isCouple && 'bg-red-100 text-red-700',
-              isCouple && 'bg-orange-100 text-orange-700'
-            )}>
-              {!isOccupied && (
-                <>
-                  <span className="w-2 h-2 rounded-full bg-green-500" />
-                  Libre
-                </>
+          <div className="mt-2 flex justify-center">
+            <div
+              className={cn(
+                'inline-flex items-center gap-2 rounded-full px-4 py-1.5 text-sm font-medium',
+                styleStatut,
               )}
-              {isOccupied && !isCouple && (
-                <>
-                  <Users className="w-4 h-4" />
-                  Occupée par un pigeon
-                </>
-              )}
-              {isCouple && (
-                <>
-                  <Users className="w-4 h-4" />
-                  Occupée par un couple
-                </>
-              )}
+            >
+              <span className={cn('h-2 w-2 rounded-full', dotStatut)} />
+              {!isOccupied && 'Libre'}
+              {isOccupied && !isCouple && 'Occupée par un pigeon'}
+              {isCouple && 'Occupée par un couple'}
             </div>
           </div>
-          {/* ⬇️ MATRICULE DU PIGEON / COUPLE */}
+
           {isOccupied && !isCouple && cage.occupation_actuelle?.pigeon && (
-            <div className="text-center mt-1.5">
-              <p className="text-sm font-medium text-gray-700">
+            <div className="mt-1.5 text-center">
+              <p className="text-sm font-medium text-on-surface">
                 {cage.occupation_actuelle.pigeon.matricule}
               </p>
             </div>
           )}
 
           {isCouple && cage.occupation_actuelle?.couple && (
-            <div className="text-center mt-1.5">
-              <p className="text-sm font-medium text-gray-700">
-                {cage.occupation_actuelle.couple.male_details?.matricule || cage.occupation_actuelle.couple.male} + {cage.occupation_actuelle.couple.femelle_details?.matricule || cage.occupation_actuelle.couple.femelle}
+            <div className="mt-1.5 text-center">
+              <p className="text-sm font-medium text-on-surface">
+                {cage.occupation_actuelle.couple.male_details?.matricule ||
+                  cage.occupation_actuelle.couple.male}{' '}
+                +{' '}
+                {cage.occupation_actuelle.couple.femelle_details?.matricule ||
+                  cage.occupation_actuelle.couple.femelle}
               </p>
             </div>
           )}
         </SheetHeader>
 
         {isLoading ? (
-          <div className="flex-1 flex items-center justify-center">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-orange-500" />
+          <div className="flex flex-1 items-center justify-center">
+            <div className="h-8 w-8 animate-spin rounded-full border-b-2 border-[#00685f]" />
           </div>
         ) : (
           <ScrollArea className="flex-1 px-6">
             <div className="space-y-6 py-4">
-              
               {/* ═══ SECTION: PIGEONS ═════════════════════════════════ */}
               {isOccupied && (
                 <div className="space-y-3">
-                  <h3 className="text-lg font-semibold text-gray-700">
+                  <h3 className="text-sm font-semibold uppercase tracking-wide text-on-surface-variant">
                     Pigeons
                   </h3>
 
-                  {/* PIGEON SEUL */}
                   {!isCouple && cage.occupation_actuelle?.pigeon && (
-                    <div className="flex gap-3 p-3 rounded-xl border border-gray-200 bg-white shadow-sm">
-                      {/* Image locale */}
-                      <div className="w-20 h-20 flex-shrink-0 rounded-lg overflow-hidden bg-gray-100">
-                        <img
-                          src={getPigeonImage(cage.occupation_actuelle.pigeon.id, cage.occupation_actuelle.pigeon.sexe)}
-                          alt={cage.occupation_actuelle.pigeon.matricule}
-                          className="w-full h-full object-cover"
-                        />
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <p className={cn(
-                          'font-semibold text-sm',
-                          cage.occupation_actuelle.pigeon.sexe === 'M' ? 'text-blue-600' : 'text-pink-500'
-                        )}>
-                          {cage.occupation_actuelle.pigeon.sexe === 'M' ? 'Mâle' : 'Femelle'}
-                        </p>
-                        <p className="text-sm text-gray-700">
-                          Matricule : {cage.occupation_actuelle.pigeon.matricule}
-                        </p>
-                        <p className="text-sm text-gray-700">
-                          Race : {cage.occupation_actuelle.pigeon.race}
-                        </p>
-                        <p className="text-sm text-gray-700">
-                          Âge : {cage.occupation_actuelle.pigeon.age} {cage.occupation_actuelle.pigeon.age > 1 ? 'ans' : 'an'}
-                        </p>
-                      </div>
-                    </div>
+                    <LignePigeon
+                      imageSrc={getPigeonImage(
+                        cage.occupation_actuelle.pigeon.id,
+                        cage.occupation_actuelle.pigeon.sexe
+                      )}
+                      libelle={cage.occupation_actuelle.pigeon.sexe === 'M' ? 'Mâle' : 'Femelle'}
+                      libelleClasse={
+                        cage.occupation_actuelle.pigeon.sexe === 'M' ? 'text-blue-600' : 'text-pink-500'
+                      }
+                      matricule={cage.occupation_actuelle.pigeon.matricule}
+                      race={cage.occupation_actuelle.pigeon.race}
+                      age={cage.occupation_actuelle.pigeon.age}
+                    />
                   )}
 
-                  {/* COUPLE */}
                   {isCouple && cage.occupation_actuelle?.couple && (
                     <div className="space-y-3">
-                      {/* MÂLE */}
-                      <div className="flex gap-3 p-3 rounded-xl border border-gray-200 bg-white shadow-sm">
-                        <div className="w-20 h-20 flex-shrink-0 rounded-lg overflow-hidden bg-gray-100">
-                          <img
-                            src={getPigeonImage(
-                              cage.occupation_actuelle.couple.male_details?.id || cage.occupation_actuelle.couple.male,
-                              'M'
-                            )}
-                            alt="Mâle"
-                            className="w-full h-full object-cover"
-                          />
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <p className="font-semibold text-sm text-blue-600">
-                            Mâle
-                          </p>
-                          <p className="text-sm text-gray-700">
-                            Matricule : {cage.occupation_actuelle.couple.male_details?.matricule || cage.occupation_actuelle.couple.male}
-                          </p>
-                          <p className="text-sm text-gray-700">
-                            Race : {cage.occupation_actuelle.couple.male_details?.race || 'Voyageur'}
-                          </p>
-                          <p className="text-sm text-gray-700">
-                            Âge : {cage.occupation_actuelle.couple.male_details?.age || 2} {cage.occupation_actuelle.couple.male_details?.age && cage.occupation_actuelle.couple.male_details.age > 1 ? 'ans' : 'an'}
-                          </p>
-                        </div>
-                      </div>
-
-                      {/* FEMELLE */}
-                      <div className="flex gap-3 p-3 rounded-xl border border-gray-200 bg-white shadow-sm">
-                        <div className="w-20 h-20 flex-shrink-0 rounded-lg overflow-hidden bg-gray-100">
-                          <img
-                            src={getPigeonImage(
-                              cage.occupation_actuelle.couple.femelle_details?.id || cage.occupation_actuelle.couple.femelle,
-                              'F'
-                            )}
-                            alt="Femelle"
-                            className="w-full h-full object-cover"
-                          />
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <p className="font-semibold text-sm text-pink-500">
-                            Femelle
-                          </p>
-                          <p className="text-sm text-gray-700">
-                            Matricule : {cage.occupation_actuelle.couple.femelle_details?.matricule || cage.occupation_actuelle.couple.femelle}
-                          </p>
-                          <p className="text-sm text-gray-700">
-                            Race : {cage.occupation_actuelle.couple.femelle_details?.race || 'Voyageur'}
-                          </p>
-                          <p className="text-sm text-gray-700">
-                            Âge : {cage.occupation_actuelle.couple.femelle_details?.age || 1} {cage.occupation_actuelle.couple.femelle_details?.age && cage.occupation_actuelle.couple.femelle_details.age > 1 ? 'ans' : 'an'}
-                          </p>
-                        </div>
-                      </div>
+                      <LignePigeon
+                        imageSrc={getPigeonImage(
+                          cage.occupation_actuelle.couple.male_details?.id ||
+                            cage.occupation_actuelle.couple.male,
+                          'M'
+                        )}
+                        libelle="Mâle"
+                        libelleClasse="text-blue-600"
+                        matricule={
+                          cage.occupation_actuelle.couple.male_details?.matricule ||
+                          cage.occupation_actuelle.couple.male
+                        }
+                        race={cage.occupation_actuelle.couple.male_details?.race || 'Voyageur'}
+                        age={cage.occupation_actuelle.couple.male_details?.age ?? 2}
+                      />
+                      <LignePigeon
+                        imageSrc={getPigeonImage(
+                          cage.occupation_actuelle.couple.femelle_details?.id ||
+                            cage.occupation_actuelle.couple.femelle,
+                          'F'
+                        )}
+                        libelle="Femelle"
+                        libelleClasse="text-pink-500"
+                        matricule={
+                          cage.occupation_actuelle.couple.femelle_details?.matricule ||
+                          cage.occupation_actuelle.couple.femelle
+                        }
+                        race={cage.occupation_actuelle.couple.femelle_details?.race || 'Voyageur'}
+                        age={cage.occupation_actuelle.couple.femelle_details?.age ?? 1}
+                      />
                     </div>
                   )}
                 </div>
@@ -384,52 +342,54 @@ const router = useRouter()
 
               {/* ═══ SECTION: HISTORIQUE ══════════════════════════════ */}
               <div className="space-y-3">
-                <h3 className="text-lg font-semibold text-gray-700">
+                <h3 className="text-sm font-semibold uppercase tracking-wide text-on-surface-variant">
                   Historique
                 </h3>
                 <div className="space-y-2">
                   {historique.map((item, index) => (
                     <div key={index} className="flex items-start gap-2 text-sm">
                       {item.type_action === 'occupation' ? (
-                        <Clock className="w-4 h-4 text-gray-400 mt-0.5 flex-shrink-0" />
+                        <Clock className="mt-0.5 h-4 w-4 flex-shrink-0 text-primary" />
                       ) : (
-                        <span className="w-1.5 h-1.5 rounded-full bg-gray-400 mt-2 flex-shrink-0" />
+                        <span className="mt-2 h-1.5 w-1.5 flex-shrink-0 rounded-full bg-outline-variant" />
                       )}
-                      <span className="text-gray-600">
-                        <span className="font-medium">{item.date_formatee}</span> : {item.description}
+                      <span className="text-on-surface-variant">
+                        <span className="font-medium text-on-surface">{item.date_formatee}</span> :{' '}
+                        {item.description}
                       </span>
                     </div>
                   ))}
                 </div>
-                <button 
-                 onClick={handleVoirHistorique}
-                 className="text-blue-500 text-sm font-medium hover:text-blue-600 flex items-center gap-1"
-               >
-                 Voir tout l'historique
-                 <ChevronRight className="w-4 h-4" />
-               </button>
+                <button
+                  onClick={handleVoirHistorique}
+                  className="flex items-center gap-1 text-sm font-medium text-primary transition-colors hover:text-primary/80"
+                >
+                  Voir tout l'historique
+                  <ChevronRight className="h-4 w-4" />
+                </button>
               </div>
 
               {/* ═══ SECTION: ACTIONS ═════════════════════════════════ */}
               <div className="space-y-3">
-                <h3 className="text-lg font-semibold text-gray-700">
+                <h3 className="text-sm font-semibold uppercase tracking-wide text-on-surface-variant">
                   Actions
                 </h3>
 
                 <div className="space-y-2.5">
-                  {/* AFFECTER UN PIGEON */}
                   {!isOccupied && (
                     <>
                       <Dialog open={showAffecterPigeon} onOpenChange={setShowAffecterPigeon}>
                         <DialogTrigger asChild>
-                          <button className="w-full flex items-center justify-center gap-2 py-3 px-4 rounded-xl border-2 border-blue-500 text-blue-600 font-medium hover:bg-blue-50 transition-colors">
-                            <UserPlus className="w-5 h-5" />
+                          <button className="flex w-full items-center justify-center gap-2 rounded-xl border-2 border-primary px-4 py-3 font-medium text-primary transition-colors hover:bg-primary-container/30">
+                            <UserPlus className="h-5 w-5" />
                             Affecter un pigeon
                           </button>
                         </DialogTrigger>
                         <DialogContent>
                           <DialogHeader>
-                            <DialogTitle>Affecter un pigeon à la cage {cage?.numero}</DialogTitle>
+                            <DialogTitle>
+                              Affecter un pigeon à la cage {cage?.numero}
+                            </DialogTitle>
                           </DialogHeader>
                           <div className="space-y-4 pt-4">
                             <Select value={selectedPigeon} onValueChange={setSelectedPigeon}>
@@ -449,11 +409,11 @@ const router = useRouter()
                                 ))}
                               </SelectContent>
                             </Select>
-                            <div className="flex gap-2 justify-end">
+                            <div className="flex justify-end gap-2">
                               <Button variant="outline" onClick={() => setShowAffecterPigeon(false)}>
                                 Annuler
                               </Button>
-                              <Button 
+                              <Button
                                 onClick={handleAffecterPigeon}
                                 disabled={!selectedPigeon || occuperMutation.isPending}
                               >
@@ -464,17 +424,18 @@ const router = useRouter()
                         </DialogContent>
                       </Dialog>
 
-                      {/* AFFECTER UN COUPLE */}
                       <Dialog open={showAffecterCouple} onOpenChange={setShowAffecterCouple}>
                         <DialogTrigger asChild>
-                          <button className="w-full flex items-center justify-center gap-2 py-3 px-4 rounded-xl border-2 border-orange-500 text-orange-600 font-medium hover:bg-orange-50 transition-colors">
-                            <Users className="w-5 h-5" />
+                          <button className="flex w-full items-center justify-center gap-2 rounded-xl border-2 border-amber-500 px-4 py-3 font-medium text-amber-600 transition-colors hover:bg-amber-50">
+                            <Users className="h-5 w-5" />
                             Affecter un couple
                           </button>
                         </DialogTrigger>
                         <DialogContent>
                           <DialogHeader>
-                            <DialogTitle>Affecter un couple à la cage {cage?.numero}</DialogTitle>
+                            <DialogTitle>
+                              Affecter un couple à la cage {cage?.numero}
+                            </DialogTitle>
                           </DialogHeader>
                           <div className="space-y-4 pt-4">
                             <Select value={selectedCouple} onValueChange={setSelectedCouple}>
@@ -489,16 +450,17 @@ const router = useRouter()
                                 )}
                                 {couplesActifs.map((c) => (
                                   <SelectItem key={c.id} value={c.id}>
-                                    {c.male_details?.matricule || c.male} + {c.femelle_details?.matricule || c.femelle}
+                                    {c.male_details?.matricule || c.male} +{' '}
+                                    {c.femelle_details?.matricule || c.femelle}
                                   </SelectItem>
                                 ))}
                               </SelectContent>
                             </Select>
-                            <div className="flex gap-2 justify-end">
+                            <div className="flex justify-end gap-2">
                               <Button variant="outline" onClick={() => setShowAffecterCouple(false)}>
                                 Annuler
                               </Button>
-                              <Button 
+                              <Button
                                 onClick={handleAffecterCouple}
                                 disabled={!selectedCouple || occuperMutation.isPending}
                               >
@@ -511,29 +473,26 @@ const router = useRouter()
                     </>
                   )}
 
-                  {/* LIBÉRER LA CAGE (si occupée) */}
                   {isOccupied && (
                     <button
                       onClick={handleLiberer}
                       disabled={libererMutation.isPending}
-                      className="w-full flex items-center justify-center gap-2 py-3 px-4 rounded-xl border-2 border-red-500 text-red-600 font-medium hover:bg-red-50 transition-colors disabled:opacity-50"
+                      className="flex w-full items-center justify-center gap-2 rounded-xl border-2 border-destructive/60 px-4 py-3 font-medium text-destructive transition-colors hover:bg-error-container/50 disabled:opacity-50"
                     >
-                      <Trash2 className="w-5 h-5" />
+                      <Trash2 className="h-5 w-5" />
                       Libérer la cage
                     </button>
                   )}
 
-                  {/* VOIR HISTORIQUE COMPLET */}
-                  <button 
-                       onClick={handleVoirHistorique}
-                       className="w-full flex items-center justify-center gap-2 py-3 px-4 rounded-xl border-2 border-gray-300 text-gray-600 font-medium hover:bg-gray-50 transition-colors"
-                       >
-                        <FileText className="w-5 h-5" />
-                          Voir historique complet
-                    </button>
+                  <button
+                    onClick={handleVoirHistorique}
+                    className="flex w-full items-center justify-center gap-2 rounded-xl border-2 border-outline-variant px-4 py-3 font-medium text-on-surface-variant transition-colors hover:bg-surface-container-high hover:text-on-surface"
+                  >
+                    <FileText className="h-5 w-5" />
+                    Voir historique complet
+                  </button>
                 </div>
               </div>
-
             </div>
           </ScrollArea>
         )}

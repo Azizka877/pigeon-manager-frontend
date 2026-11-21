@@ -1,10 +1,12 @@
 'use client'
 
 import Link from 'next/link'
+import Image from 'next/image'
 import { cn } from '@/lib/utils'
 import { useAuthStore } from '@/stores/auth-store'
 import { useUIStore } from '@/stores/ui-store'
 import { usePathname, useRouter } from 'next/navigation'
+import { clearTokenCookie } from '@/lib/auth-cookie'
 import {
   LayoutDashboard,
   Home,
@@ -15,92 +17,120 @@ import {
   LogOut,
   Menu,
   X,
-  User
+  User,
 } from 'lucide-react'
 
-const navItems = [
-  { href: '/', label: 'Dashboard', icon: LayoutDashboard },
-  { href: '/cages', label: 'Volière', icon: Home },
-  { href: '/pigeons', label: 'Pigeons', icon: Bird },
-  { href: '/couples', label: 'Couples', icon: Heart },
-  { href: '/reproductions', label: 'Reproductions', icon: Egg },
-  { href: '/sales', label: 'Sorties', icon: ArrowUpRight },
-  { href: '/profile', label: 'Profil', icon: User }, 
+const SECTIONS_NAV = [
+  {
+    titre: 'Pilotage',
+    items: [
+      { href: '/', label: 'Dashboard', icon: LayoutDashboard },
+      { href: '/cages', label: 'Volière', icon: Home },
+      { href: '/pigeons', label: 'Pigeons', icon: Bird },
+    ],
+  },
+  {
+    titre: 'Élevage',
+    items: [
+      { href: '/couples', label: 'Couples', icon: Heart },
+      { href: '/reproductions', label: 'Reproductions', icon: Egg },
+      { href: '/sales', label: 'Sorties', icon: ArrowUpRight },
+    ],
+  },
+  {
+    titre: 'Compte',
+    items: [{ href: '/profile', label: 'Profil', icon: User }],
+  },
 ]
-
-
-
 
 export function Sidebar() {
   const pathname = usePathname()
-  const { user, logout, isAuthenticated } = useAuthStore()
-  const { sidebarOpen, setSidebarOpen } = useUIStore()
-const router = useRouter()
+  const router = useRouter()
+  const user = useAuthStore((s) => s.user)
+  const isAuthenticated = useAuthStore((s) => s.isAuthenticated)
+  const logout = useAuthStore((s) => s.logout)
+  const sidebarOpen = useUIStore((s) => s.sidebarOpen)
+  const setSidebarOpen = useUIStore((s) => s.setSidebarOpen)
 
-
-const handleLogout = () => {
-  logout()           
-  router.push('/login')  
+ const handleLogout = () => {
+  clearTokenCookie()
+  logout()
+  router.push('/login')
 }
-  const NavContent = () => (
+
+  const navContent = (
     <>
       {/* Logo */}
-      <div className="px-6 py-6 flex items-center gap-3">
-        <div className="w-10 h-10 rounded-xl bg-primary flex items-center justify-center">
-          <Bird className="w-6 h-6 text-primary-foreground" />
+      <div className="flex items-center gap-3 px-6 py-6">
+        <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-gradient-to-br from-[#00685f] via-[#005651] to-[#01352f] shadow-md shadow-primary/20">
+          <Image
+            src="/pigeon-vol.png"
+            alt="PigeonManager"
+            width={24}
+            height={27}
+            loading="eager"
+            draggable={false}
+          />
         </div>
         <div>
-          <h1 className="font-bold text-lg text-on-surface">PigeonManager</h1>
+          <h1 className="text-lg font-bold leading-tight text-on-surface">PigeonManager</h1>
+          <p className="text-[11px] text-on-surface-variant">Gestion de colombier</p>
         </div>
       </div>
 
-      {/* User - affiché seulement si connecté */}
+      {/* Utilisateur */}
       {isAuthenticated && user && (
-        <div className="px-6 mb-6 flex items-center gap-3">
-          <div className="w-10 h-10 rounded-full bg-surface-container-high flex items-center justify-center">
-            <span className="text-sm font-semibold text-primary">
-              {user.username?.charAt(0).toUpperCase() || 'U'}
-            </span>
+        <div className="mx-4 mb-4 flex items-center gap-3 rounded-2xl bg-surface-container-high/70 p-3">
+          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-[#00685f] to-[#005651] text-sm font-semibold text-white">
+            {user.username?.charAt(0).toUpperCase() || 'U'}
           </div>
-          <div>
-            <p className="text-sm font-medium text-on-surface">{user.username || 'Utilisateur'}</p>
+          <div className="min-w-0">
+            <p className="truncate text-sm font-medium text-on-surface">{user.username || 'Utilisateur'}</p>
             <p className="text-xs text-on-surface-variant">Éleveur</p>
           </div>
         </div>
       )}
 
       {/* Navigation */}
-      <nav className="flex-1 px-3 space-y-1">
-        {navItems.map((item) => {
-          const Icon = item.icon
-          const isActive = pathname === item.href || pathname.startsWith(`${item.href}/`)
-          return (
-            <Link
-              key={item.href}
-              href={item.href}
-              onClick={() => setSidebarOpen(false)}
-              className={cn(
-                'flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all',
-                isActive
-                  ? 'bg-primary text-primary-foreground shadow-md'
-                  : 'text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface'
-              )}
-            >
-              <Icon className="w-5 h-5" />
-              {item.label}
-            </Link>
-          )
-        })}
+      <nav className="flex-1 overflow-y-auto px-3 pb-4">
+        {SECTIONS_NAV.map((section) => (
+          <div key={section.titre}>
+            <p className="px-4 pb-1 pt-4 text-[11px] font-semibold uppercase tracking-wider text-on-surface-variant/60">
+              {section.titre}
+            </p>
+            {section.items.map((item) => {
+              const Icon = item.icon
+              const isActive = pathname === item.href || pathname.startsWith(`${item.href}/`)
+              return (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  onClick={() => setSidebarOpen(false)}
+                  className={cn(
+                    'mb-0.5 flex items-center gap-3 rounded-xl px-4 py-2.5 text-sm font-medium transition-all duration-200',
+                    isActive
+                      ? 'bg-gradient-to-r from-[#00685f] to-[#005651] text-primary-foreground shadow-md shadow-primary/25'
+                      : 'text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface',
+                  )}
+                >
+                  <Icon className="h-5 w-5 shrink-0" />
+                  {item.label}
+                  {isActive && <span className="ml-auto h-1.5 w-1.5 rounded-full bg-white/90" />}
+                </Link>
+              )
+            })}
+          </div>
+        ))}
       </nav>
 
-      {/* Logout - affiché seulement si connecté */}
+      {/* Déconnexion */}
       {isAuthenticated && (
-        <div className="p-3 mt-auto">
+        <div className="border-t border-outline-variant/50 p-3">
           <button
-          onClick={handleLogout}
-            className="flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium text-on-surface-variant hover:bg-error-container hover:text-destructive transition-all w-full"
+            onClick={handleLogout}
+            className="flex w-full items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium text-on-surface-variant transition-all hover:bg-error-container hover:text-destructive"
           >
-            <LogOut className="w-5 h-5" />
+            <LogOut className="h-5 w-5" />
             Déconnexion
           </button>
         </div>
@@ -112,29 +142,29 @@ const handleLogout = () => {
     <>
       {sidebarOpen && (
         <div
-          className="fixed inset-0 bg-black/50 z-40 md:hidden"
+          className="fixed inset-0 z-40 bg-black/50 md:hidden"
           onClick={() => setSidebarOpen(false)}
         />
       )}
 
       <button
         onClick={() => setSidebarOpen(!sidebarOpen)}
-        className="fixed top-4 left-4 z-50 p-2 rounded-lg bg-surface shadow-md md:hidden"
+        className="fixed left-4 top-4 z-50 rounded-lg bg-surface p-2 shadow-md md:hidden"
       >
-        {sidebarOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+        {sidebarOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
       </button>
 
-      <aside className="hidden md:flex flex-col w-72 h-screen bg-surface-container-low border-r border-outline-variant fixed left-0 top-0 z-30">
-        <NavContent />
+      <aside className="fixed left-0 top-0 z-30 hidden h-screen w-72 flex-col border-r border-outline-variant bg-surface-container-low md:flex">
+        {navContent}
       </aside>
 
       <aside
         className={cn(
-          'flex flex-col w-72 h-screen bg-surface-container-low border-r border-outline-variant fixed left-0 top-0 z-50 transition-transform md:hidden',
-          sidebarOpen ? 'translate-x-0' : '-translate-x-full'
+          'fixed left-0 top-0 z-50 flex h-screen w-72 flex-col border-r border-outline-variant bg-surface-container-low transition-transform duration-300 md:hidden',
+          sidebarOpen ? 'translate-x-0' : '-translate-x-full',
         )}
       >
-        <NavContent />
+        {navContent}
       </aside>
     </>
   )

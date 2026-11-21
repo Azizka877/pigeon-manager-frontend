@@ -1,43 +1,63 @@
-// hooks/use-reproductions.ts
 'use client'
 
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { reproductionsApi } from '@/lib/api/client'
-import type { Reproduction, CreateReproductionPayload, PaginatedResponse, JeuneData, PigeonMini } from '@/types'
-import type { AxiosResponse } from 'axios'
+// ─────────────────────────────────────────────────────────────────────────────
+// hooks/use-reproductions.ts — hooks React Query des cycles d'élevage.
+// CRUD complet + ponte express (depuis les cartes couple) + baguage des
+// jeunes. La liste est normalisée : les réponses DRF brutes (tableaux) et
+// paginées ({ results }) renvoient la même enveloppe PaginatedResponse.
+// ⚠ Fix : le détail est mis en cache sous ['reproduction', id] — les
+// mutations qui le touchent invalident CETTE clé (l'ancien useAjouterJeunes
+// invalide ['reproductions', id], qui ne correspondait à rien).
+// ─────────────────────────────────────────────────────────────────────────────
 
-// ─── GET : Liste des reproductions ───
-export function useReproductions() {
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { reproductionsApi } from '@/lib/api/client'
+import type {
+  CreateReproductionPayload,
+  JeuneData,
+  PaginatedResponse,
+  PigeonMini,
+  Reproduction,
+} from '@/types'
+
+// ─── GET : Liste des reproductions (optionnellement filtrée par couple) ─────
+export function useReproductions(coupleId?: string) {
   return useQuery<PaginatedResponse<Reproduction>, Error>({
-    queryKey: ['reproductions'],
+    queryKey: ['reproductions', coupleId ?? 'tous'],
     queryFn: async () => {
-      const response: AxiosResponse<PaginatedResponse<Reproduction>> = await reproductionsApi.list()
-      return response.data
+      const { data } = await reproductionsApi.list()
+      const liste = Array.isArray(data) ? data : data.results
+      const filtres = coupleId ? liste.filter((r) => r.couple === coupleId) : liste
+      return { count: filtres.length, next: null, previous: null, results: filtres }
     },
-    staleTime: 1000 * 60 * 2,
+    staleTime: 30 * 1000,
   })
 }
 
-// ─── GET : Détail d'une reproduction ───
+// ─── GET : Détail d'un cycle ─────────────────────────────────────────────────
 export function useReproduction(id: string | null) {
   return useQuery<Reproduction, Error>({
     queryKey: ['reproduction', id],
     queryFn: async () => {
-      const response: AxiosResponse<Reproduction> = await reproductionsApi.get(id!)
-      return response.data
+      const { data } = await reproductionsApi.get(id!)
+      return data
     },
     enabled: !!id,
   })
 }
 
-// ─── POST RAPIDE : Quick ponte depuis Couples ───
+// ─── POST RAPIDE : Ponte express depuis une carte couple ────────────────────
 export function useQuickCreateReproduction() {
   const queryClient = useQueryClient()
 
-  return useMutation<Reproduction, Error, { couple: string; date_ponte: string; nombre_oeufs?: number }>({
+  return useMutation<
+    Reproduction,
+    Error,
+    { couple: string; date_ponte: string; nombre_oeufs?: number }
+  >({
     mutationFn: async (data) => {
-      const response = await reproductionsApi.create(data as any)
-      return response.data
+      const { data: reproduction } = await reproductionsApi.create(data)
+      return reproduction
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['reproductions'] })
@@ -46,40 +66,41 @@ export function useQuickCreateReproduction() {
   })
 }
 
-// ─── POST COMPLET : Création avec jeunes ───
+// ─── POST COMPLET : Création d'un cycle, avec jeunes optionnels ─────────────
 export function useCreateReproduction() {
   const queryClient = useQueryClient()
 
   return useMutation<Reproduction, Error, CreateReproductionPayload>({
     mutationFn: async (data) => {
-      const response = await reproductionsApi.create(data as any)
-      return response.data
+      const { data: reproduction } = await reproductionsApi.create(data)
+      return reproduction
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['reproductions'] })
-      queryClient.invalidateQueries({ queryKey: ['pigeons'] })
       queryClient.invalidateQueries({ queryKey: ['couples'] })
+      queryClient.invalidateQueries({ queryKey: ['pigeons'] })
     },
   })
 }
 
-// ─── PUT : Modifier une reproduction ───
+// ─── PUT : Modifier un cycle (dates d'éclosion / sevrage, comptages…) ───────
 export function useUpdateReproduction() {
   const queryClient = useQueryClient()
 
   return useMutation<Reproduction, Error, { id: string; data: Partial<Reproduction> }>({
     mutationFn: async ({ id, data }) => {
-      const response = await reproductionsApi.update(id, data)
-      return response.data
+      const { data: reproduction } = await reproductionsApi.update(id, data)
+      return reproduction
     },
-    onSuccess: (_, variables) => {
+    onSuccess: (reproduction) => {
       queryClient.invalidateQueries({ queryKey: ['reproductions'] })
-      queryClient.invalidateQueries({ queryKey: ['reproduction', variables.id] })
+      queryClient.invalidateQueries({ queryKey: ['reproduction', reproduction.id] })
+      queryClient.invalidateQueries({ queryKey: ['couples'] })
     },
   })
 }
 
-// ─── DELETE : Supprimer une reproduction ───
+// ─── DELETE : Supprimer un cycle ─────────────────────────────────────────────
 export function useDeleteReproduction() {
   const queryClient = useQueryClient()
 
@@ -89,28 +110,29 @@ export function useDeleteReproduction() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['reproductions'] })
+      queryClient.invalidateQueries({ queryKey: ['couples'] })
     },
   })
 }
 
-
-// hooks/use-reproductions.ts
-// hooks/use-reproductions.ts
+// ─── POST : Baguer les jeunes d'une couvée existante ────────────────────────
 export function useAjouterJeunes() {
   const queryClient = useQueryClient()
-  
+
   return useMutation<
-    { message: string; jeunes: PigeonMini[] }, 
-    Error, 
+    { message: string; jeunes: PigeonMini[] },
+    Error,
     { id: string; jeunes: JeuneData[] }
   >({
     mutationFn: async ({ id, jeunes }) => {
-      const response = await reproductionsApi.ajouterJeunes(id, jeunes)
-      return response.data
+      const { data } = await reproductionsApi.ajouterJeunes(id, jeunes)
+      return data
     },
     onSuccess: (_, variables) => {
-      queryClient.invalidateQueries({ queryKey: ['reproductions', variables.id] })
+      // La fiche détail lit ['reproduction', id] — plus ['reproductions', id]
+      queryClient.invalidateQueries({ queryKey: ['reproduction', variables.id] })
       queryClient.invalidateQueries({ queryKey: ['reproductions'] })
+      queryClient.invalidateQueries({ queryKey: ['pigeons'] })
     },
   })
 }

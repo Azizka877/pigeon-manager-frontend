@@ -1,4 +1,4 @@
-// hooks/use-pigeon-events.ts
+// hooks/use-pigeon-events.ts — copie fidèle du hook du projet
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { pigeonEventsApi } from '@/lib/api/client'
 import type { PigeonEvent } from '@/types'
@@ -8,7 +8,8 @@ export function usePigeonEvents(pigeonId: string) {
     queryKey: ['pigeons', pigeonId, 'events'],
     queryFn: async () => {
       const { data } = await pigeonEventsApi.list(pigeonId)
-      return data.results || []
+      // DRF renvoie soit une liste brute, soit une réponse paginée { results }
+      return Array.isArray(data) ? data : data.results
     },
     enabled: !!pigeonId,
   })

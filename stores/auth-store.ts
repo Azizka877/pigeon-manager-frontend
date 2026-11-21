@@ -3,6 +3,7 @@
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
 import { authApi } from '@/lib/api/client'
+import { setTokenCookie, clearTokenCookie } from '@/lib/auth-cookie'
 import type { User } from '@/types'
 
 interface AuthState {
@@ -16,7 +17,7 @@ interface AuthState {
 
 export const useAuthStore = create<AuthState>()(
   persist(
-    (set, get) => ({
+    (set) => ({
       user: null,
       isAuthenticated: false,
       isLoading: false,
@@ -27,10 +28,10 @@ export const useAuthStore = create<AuthState>()(
           const { data: tokens } = await authApi.login(username, password)
           localStorage.setItem('access_token', tokens.access)
           localStorage.setItem('refresh_token', tokens.refresh)
-          
-          // ✅ CORRIGÉ : data est User directement, pas PaginatedResponse
+          setTokenCookie(tokens.access) // le proxy Next dépend de ce cookie
+
           const { data: user } = await authApi.getMe()
-          
+
           set({ user, isAuthenticated: !!user, isLoading: false })
         } catch (error) {
           set({ isLoading: false })
@@ -41,6 +42,7 @@ export const useAuthStore = create<AuthState>()(
       logout: () => {
         localStorage.removeItem('access_token')
         localStorage.removeItem('refresh_token')
+        clearTokenCookie()
         set({ user: null, isAuthenticated: false })
       },
 
@@ -53,19 +55,20 @@ export const useAuthStore = create<AuthState>()(
 
         set({ isLoading: true })
         try {
-          // ✅ CORRIGÉ : data est User directement
           const { data: user } = await authApi.getMe()
           set({ user, isAuthenticated: !!user, isLoading: false })
         } catch (error) {
+          // Token invalide même après refresh → purge complète
           localStorage.removeItem('access_token')
           localStorage.removeItem('refresh_token')
+          clearTokenCookie()
           set({ user: null, isAuthenticated: false, isLoading: false })
         }
       },
     }),
     {
       name: 'auth-storage',
-      partialize: (state) => ({ 
+      partialize: (state) => ({
         user: state.user,
         isAuthenticated: state.isAuthenticated,
       }),

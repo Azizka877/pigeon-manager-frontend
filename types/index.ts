@@ -1,21 +1,30 @@
-// types/index.ts
+export type StatutPigeon = 'actif' | 'vendu' | 'mort' | 'perdu'
+
+export interface CageOccupationPigeon {
+  id: string
+  matricule?: string | null
+  sexe?: 'M' | 'F' | null
+  race?: string | null
+  age?: number | null
+}
+
+
 export interface Pigeon {
   id: string
   matricule: string
   sexe: 'M' | 'F'
-  sexe_display: string
-  race: string
-  date_naissance: string
-  age: number
+  sexe_display?: string          // calculé par l'API — absent des formulaires
+  race: string | null
   couleur: string | null
   poids: number | null
-  pere: string | null
-  mere: string | null
-  statut: 'actif' | 'vendu' | 'mort' | 'perdu'
-  statut_display: string
-  notes: string | null
-  created_at: string
-  updated_at: string
+  statut: string
+  statut_display?: string
+  date_naissance: string | null
+  age: number | null
+  pere: string | number | null
+  mere: string | number | null
+  created_at?: string
+  updated_at?: string
 }
 
 export interface PigeonEvent {
@@ -27,14 +36,21 @@ export interface PigeonEvent {
   created_at: string
 }
 
-
+export interface CoupleMember {
+  id: string
+  matricule: string
+  sexe?: 'M' | 'F' | null
+  race?: string | null
+  couleur?: string | null
+  age?: number | null
+}
 
 export interface Couple {
   id: string
-  male: string                    // ← ID du mâle (string)
-  male_details: Pigeon | null     // ← Détails du mâle (objet Pigeon)
-  femelle: string                 // ← ID de la femelle (string)
-  femelle_details: Pigeon | null  // ← Détails de la femelle (objet Pigeon)
+  male: string                    
+  male_details: Pigeon | null     
+  femelle: string                 
+  femelle_details: Pigeon | null  
   date_formation: string
   date_rupture?: string | null
   statut: 'actif' | 'rompu'
@@ -51,16 +67,25 @@ export interface Occupation {
 
 export interface Cage {
   id: string
-  numero: string
+  numero: number | string
   nom: string | null
-  superficie: string
-  position_x: number
-  position_y: number
-  est_active: boolean
-  statut_actuel: 'libre' | 'seul' | 'couple'
-  occupation_actuelle: Occupation | null
-  created_at: string
-  updated_at: string
+  capacite?: number | null
+  statut?: string | null
+  date_creation?: string | null
+  occupation_actuelle?:
+    | {
+        type: 'seul' | 'couple'
+        pigeon?: CageOccupationPigeon
+        couple?: {
+          id: string
+          male: string | null
+          femelle: string | null
+          male_details?: CageOccupationPigeon
+          femelle_details?: CageOccupationPigeon
+        }
+        date_debut?: string | null
+      }
+    | null
 }
 
 export interface PaginatedResponse<T> {
@@ -78,53 +103,67 @@ export interface User {
   first_name: string
   last_name: string
   is_staff: boolean
-  is_active: boolean
-  date_joined: string
-  last_login: string | null
+  
+  is_active?: boolean
+  date_joined?: string
+  last_login?: string | null
 }
 
-// Type pour les reproductions
+export interface ReproductionCoupleDetails {
+  id: string
+  male?: PigeonMini | null
+  femelle?: PigeonMini | null
+}
 export interface Reproduction {
   id: string
   couple: string
-  couple_details?: {
-    id: string
-    male: PigeonMini
-    femelle: PigeonMini
-  }
+  couple_details?: ReproductionCoupleDetails | null
   date_ponte: string
-  date_eclosion?: string
-  date_sevrage?: string | null
+  date_eclosion: string | null
+  date_sevrage: string | null
   nombre_oeufs: number
-  nombre_eclos: number
+  /** Null tant que l'éclosion n'a pas été notée */
+  nombre_eclos: number | null
   nombre_jeunes: number
-  jeunes: string[]
-  jeunes_details: PigeonMini[]  // ← Maintenant peuplé !
-  statut: 'incubation' | 'eclosion' | 'sevrage' | 'termine'
-  statut_display: string
-  notes?: string
-  created_at: string
-  updated_at: string
+  notes: string | null
+  /** Pigeonneaux bagués de la couvée (détails imbriqués) */
+  jeunes_details?: PigeonMini[]
+  created_at?: string
 }
+
 export interface TokenResponse {
   access: string
   refresh: string
 }
 
+export type TypeSortie = 'vente' | 'perte' | 'deces'
+
 export interface Sortie {
   id: string
-  pigeon: string                    // ← ID du pigeon (string)
-  type_sortie: 'vente' | 'deces' | 'perte'
+  /** ID du pigeon sorti (le matricule se retrouve via le registre des pigeons) */
+  pigeon: string
+  type_sortie: TypeSortie
   date_sortie: string
-  prix: string | null              // ← API retourne string ("320.00") ou null
+  /** L'API renvoie un Decimal sérialisé ("320.00") ou null hors vente */
+  prix: string | null
   acheteur: string | null
   cause: string | null
   circonstances: string | null
   notes: string | null
-  created_at: string
-  
+  created_at?: string
 }
 
+/** Payload de création — prix en string à 2 décimales (DecimalField Django) */
+export interface CreateSortiePayload {
+  pigeon: string
+  type_sortie: TypeSortie
+  date_sortie: string
+  prix?: string | null
+  acheteur?: string | null
+  cause?: string | null
+  circonstances?: string | null
+  notes?: string | null
+}
 
 export interface ColombierConfig {
   id: number
@@ -209,17 +248,15 @@ export interface CagesApiResponse extends PaginatedResponse<Cage> {}
 
 
 
-
-
 export interface PigeonMini {
   id: string
   matricule: string
-  sexe: string
-  sexe_display: string
-  race: string
-  couleur?: string
-  generation: number
+  sexe?: 'M' | 'F' | null
+  race?: string | null
+  sexe_display?: string
+  couleur?: string | null
 }
+
 
 export interface ArbreNode {
   id: string
@@ -279,7 +316,6 @@ export interface CreateReproductionPayload {
   date_eclosion?: string
   nombre_oeufs?: number
   notes?: string
-  // Le backend accepte ce champ pour créer les jeunes
   jeunes?: Array<{
     matricule: string
     sexe: 'M' | 'F'

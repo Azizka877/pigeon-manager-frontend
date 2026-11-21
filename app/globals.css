@@ -362,3 +362,183 @@
     break-inside: avoid;
   }
 }
+
+
+
+/* ═══════════════════════════════════════════════
+   Animations — page de connexion (pigeons & cages)
+   ═══════════════════════════════════════════════ */
+
+@keyframes pm-vol {
+  from { transform: translate3d(-12vw, 0, 0); }
+  to   { transform: translate3d(112vw, 0, 0); }
+}
+@keyframes pm-vol-inverse {
+  from { transform: translate3d(112vw, 0, 0); }
+  to   { transform: translate3d(-12vw, 0, 0); }
+}
+@keyframes pm-hochet {
+  0%, 100% { transform: translateY(0) rotate(1.5deg); }
+  50%      { transform: translateY(-14px) rotate(-2deg); }
+}
+@keyframes pm-battement {
+  from { transform: rotate(26deg); }
+  to   { transform: rotate(-22deg); }
+}
+@keyframes pm-balancement {
+  0%, 100% { transform: rotate(-1.4deg); }
+  50%      { transform: rotate(1.4deg); }
+}
+@keyframes pm-apparition {
+  from { opacity: 0; transform: translateY(18px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes pm-lueur {
+  0%, 100% { opacity: .35; transform: scale(1); }
+  50%      { opacity: .6;  transform: scale(1.08); }
+}
+
+.pm-vol {
+  animation: pm-vol var(--duree, 16s) linear var(--delai, 0s) infinite;
+  will-change: transform;
+}
+.pm-vol-inverse {
+  animation: pm-vol-inverse var(--duree, 16s) linear var(--delai, 0s) infinite;
+  will-change: transform;
+}
+.pm-hochet { animation: pm-hochet 2.8s ease-in-out infinite; }
+
+.pm-aile-g,
+.pm-aile-d {
+  transform-box: view-box;
+  transform-origin: 30px 26px;
+}
+.pm-aile-g { animation: pm-battement .4s ease-in-out infinite alternate; }
+.pm-aile-d { animation: pm-battement .4s ease-in-out -0.12s infinite alternate; }
+
+.pm-cage {
+  transform-origin: 50% 0;
+  animation: pm-balancement var(--duree, 5s) ease-in-out var(--delai, 0s) infinite;
+}
+
+.pm-apparition { animation: pm-apparition .7s cubic-bezier(.22, .8, .35, 1) both; }
+.pm-lueur { animation: pm-lueur 6s ease-in-out infinite; }
+
+@media (prefers-reduced-motion: reduce) {
+  .pm-vol, .pm-vol-inverse, .pm-hochet, .pm-aile-g, .pm-aile-d,
+  .pm-cage, .pm-apparition, .pm-lueur {
+    animation: none !important;
+  }
+}
+
+
+/* ── Battement d'ailes : alternance des 2 poses ── */
+@keyframes pm-cadre-a {
+  0%, 44%   { opacity: 1; }
+  50%, 94%  { opacity: 0; }
+  100%      { opacity: 1; }
+}
+@keyframes pm-cadre-b {
+  0%, 44%   { opacity: 0; }
+  50%, 94%  { opacity: 1; }
+  100%      { opacity: 0; }
+}
+.pm-cadre-a { animation: pm-cadre-a var(--battement, .44s) linear var(--phase, 0s) infinite; }
+.pm-cadre-b { animation: pm-cadre-b var(--battement, .44s) linear var(--phase, 0s) infinite; }
+
+@media (prefers-reduced-motion: reduce) {
+  .pm-cadre-a, .pm-cadre-b { animation: none !important; }
+  .pm-cadre-b { opacity: 0 !important; }
+}
+
+
+/* ——— Dashboard : flottement doux (bannière + loader) ——— */
+@keyframes pm-flotte {
+  0%, 100% { transform: translateY(0) rotate(-2deg); }
+  50% { transform: translateY(-10px) rotate(2deg); }
+}
+.pm-flotte { animation: pm-flotte 4.5s ease-in-out infinite; }
+@media (prefers-reduced-motion: reduce) {
+  .pm-flotte { animation: none; }
+}
+
+
+
+/* ——— Volière : pigeons perchés qui prennent vie ——— */
+@keyframes pm-perche {
+  0%, 100% { transform: translateY(0) rotate(0deg); }
+  50% { transform: translateY(-1.5px) rotate(-1.2deg); }
+}
+.pm-perche { animation: pm-perche 3.8s ease-in-out infinite; }
+@media (prefers-reduced-motion: reduce) {
+  .pm-perche { animation: none; }
+}
+
+
+
+/* Le pigeon respire (échelle verticale subtile, pattes ancrées au perchoir) */
+@keyframes pm-respire {
+  0%, 100% { transform: scaleY(1); }
+  50%      { transform: scaleY(1.028); }
+}
+
+/* La paupière cligne toutes les ~5,6 s (delays désynchronisés par cage) */
+@keyframes pm-cligne {
+  0%, 91%, 100% { transform: scaleY(0.06); }
+  94%, 96.5%    { transform: scaleY(1); }
+}
+
+/* Groupe pigeon : se penche légèrement quand on survole sa cage */
+.pm-pigeon-groupe {
+  transform-box: fill-box;
+  transform-origin: 50% 100%;
+  transition: transform 0.45s ease;
+}
+.cage-card:hover .pm-pigeon-groupe {
+  transform: rotate(-2.5deg) translateY(-1.5px);
+}
+
+/* Corps du pigeon : respiration permanente */
+.pm-pigeon-corps {
+  transform-box: fill-box;
+  transform-origin: 50% 100%;
+  animation: pm-respire 3.4s ease-in-out infinite;
+}
+
+/* Paupière animée */
+.pm-pigeon-paupiere {
+  transform-box: fill-box;
+  transform-origin: 50% 50%;
+  animation: pm-cligne 5.6s ease-in-out infinite;
+}
+
+/* La porte pivote autour de son gond (coin haut-gauche) */
+.pm-porte {
+  transform-box: fill-box;
+  transform-origin: 0% 4%;
+  transition: transform 0.55s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+/* Cage occupée : porte entrouverte en permanence, encore plus au survol */
+.pm-porte-ouverte {
+  transform: scaleX(0.94) skewY(-2.5deg);
+}
+.cage-card:hover .pm-porte-ouverte {
+  transform: scaleX(0.86) skewY(-5deg);
+}
+
+/* Accessibilité : on coupe tout si l'utilisateur veut moins d'animations */
+@media (prefers-reduced-motion: reduce) {
+  .pm-pigeon-corps,
+  .pm-pigeon-paupiere {
+    animation: none !important;
+  }
+  .pm-porte,
+  .pm-pigeon-groupe {
+    transition: none !important;
+  }
+  .cage-card:hover .pm-pigeon-groupe,
+  .pm-porte-ouverte {
+    transform: none !important;
+  }
+}

@@ -9,7 +9,8 @@ export function usePigeons() {
     queryKey: ['pigeons'],
     queryFn: async () => {
       const { data } = await pigeonsApi.list()
-      return (data.results || data) as Pigeon[]
+      // DRF renvoie soit une liste brute, soit une réponse paginée { results }
+      return (Array.isArray(data) ? data : data.results) as Pigeon[]
     },
     staleTime: 30 * 1000,
     refetchOnWindowFocus: true,

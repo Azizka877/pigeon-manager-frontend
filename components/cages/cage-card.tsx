@@ -1,101 +1,159 @@
-// components/cages/cage-card.tsx
 'use client'
 
+import { useMemo } from 'react'
 import { useCageStore } from '@/stores/cage-store'
-import { cn } from '@/lib/utils'
-import { Bird } from 'lucide-react'
+import { construireSceneCage, type StatutCage } from '@/lib/cage-art'
+import { photoPigeonSeul, photosPigeonCouple, photoPigeonToit } from '@/lib/pigeon-cage-images'
 import type { Cage } from '@/types'
 
-interface CageCardProps {
-  cage: Cage
-  isSelected: boolean
+export type { Cage }
+
+
+export interface CageOccupationPigeon {
+  id: string
+  matricule?: string | null
+  sexe?: 'M' | 'F' | null
+  race?: string | null
+  age?: string | number | null
 }
 
-export function CageCard({ cage, isSelected }: CageCardProps) {
-  const setSelectedCage = useCageStore((state) => state.setSelectedCage)
+// ── Sémantique des statuts (inchangée : vert / rouge / orange) ──────────────
+const STATUS_CONFIG = {
+  libre: {
+    label: 'Libre',
+    dot: 'bg-emerald-500',
+    chip: 'bg-emerald-50 text-emerald-700 ring-1 ring-emerald-200',
+    hint: 'Disponible pour une nouvelle occupation',
+  },
+  seul: {
+    label: 'Occupée',
+    dot: 'bg-rose-500',
+    chip: 'bg-rose-50 text-rose-700 ring-1 ring-rose-200',
+    hint: '1 pigeon installé',
+  },
+  couple: {
+    label: 'Couple',
+    dot: 'bg-orange-500',
+    chip: 'bg-orange-50 text-orange-700 ring-1 ring-orange-200',
+    hint: '2 pigeons installés',
+  },
+} as const
 
-  const getStatusConfig = () => {
-    if (!cage.occupation_actuelle) {
-      return {
-        bg: 'bg-green-50',
-        border: 'border-green-400',
-        hover: 'hover:bg-green-100',
-        dot: 'bg-green-500',
-        text: 'text-green-700',
-        label: 'Libre',
-        iconColor: 'text-green-500',
-      }
-    }
+export function statutDeCage(cage: Cage): StatutCage {
+  const occ = cage.occupation_actuelle
+  if (!occ) return 'libre'
+  return occ.type === 'couple' ? 'couple' : 'seul'
+}
 
-    if (cage.occupation_actuelle.type === 'couple') {
-      return {
-        bg: 'bg-orange-50',
-        border: 'border-orange-400',
-        hover: 'hover:bg-orange-100',
-        dot: 'bg-orange-500',
-        text: 'text-orange-700',
-        label: 'Couple (2 pigeons)',
-        iconColor: 'text-orange-500',
-      }
-    }
+/** Config d'affichage d'une cage — export conservé pour les autres composants */
+export function getStatusConfig(cage: Cage) {
+  return STATUS_CONFIG[statutDeCage(cage)]
+}
 
-    return {
-      bg: 'bg-red-50',
-      border: 'border-red-400',
-      hover: 'hover:bg-red-100',
-      dot: 'bg-red-500',
-      text: 'text-red-700',
-      label: '1 pigeon',
-      iconColor: 'text-red-500',
-    }
+// ── Lecture des informations de la cage ─────────────────────────────────────
+function matriculesDeCage(cage: Cage): string[] {
+  const occ = cage.occupation_actuelle
+  if (!occ) return []
+  if (occ.type === 'seul') {
+    const m = occ.pigeon?.matricule
+    return m ? [m] : []
   }
+  const c = occ.couple
+  if (!c) return []
+  return [c.male_details?.matricule ?? c.male, c.femelle_details?.matricule ?? c.femelle]
+    .filter((v): v is string => Boolean(v))
+}
 
-  const config = getStatusConfig()
-  const isOccupied = !!cage.occupation_actuelle
-  const isCouple = cage.occupation_actuelle?.type === 'couple'
+function formatDateCourte(valeur?: string | null): string | null {
+  if (!valeur) return null
+  const d = new Date(valeur)
+  if (Number.isNaN(d.getTime())) return null
+  return d.toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' })
+}
+
+// ── La carte ─────────────────────────────────────────────────────────────────
+export function CageCard({ cage, isSelected = false }: { cage: Cage; isSelected?: boolean }) {
+  const setSelectedCage = useCageStore((s) => s.setSelectedCage)
+  const statut = statutDeCage(cage)
+  const config = STATUS_CONFIG[statut]
+
+  // Scène SVG reconstruite uniquement si la cage ou son état change.
+  // Les pigeons sont en VRAIES PHOTOS : chaque pigeon reçoit l'image de la
+  // banque correspondant à son id (stable d'un rendu à l'autre), femelles sur
+  // la banque fauve, mâles sur les gris — repli vectoriel si pas de photo.
+  const scene = useMemo(() => {
+    const occ = cage.occupation_actuelle
+    const couple = occ?.type === 'couple' ? occ.couple : undefined
+    const { male, femelle } = couple
+      ? photosPigeonCouple(
+          couple.male_details?.id ?? couple.male,
+          couple.femelle_details?.id ?? couple.femelle,
+        )
+      : { male: null, femelle: null }
+
+    return construireSceneCage({
+      uid: cage.id,
+      numero: cage.numero ?? cage.nom ?? '',
+      statut,
+      sexeSeul: occ?.pigeon?.sexe === 'F' ? 'F' : 'M',
+      photoSeul: photoPigeonSeul(occ?.pigeon?.id, occ?.pigeon?.sexe),
+      photoMale: male,
+      photoFemelle: femelle,
+      photoToit: photoPigeonToit(cage.id),
+    })
+  }, [cage.id, cage.numero, cage.nom, cage.occupation_actuelle, statut])
+
+  const numeroAffiche = cage.numero ?? cage.nom ?? '?'
+  const mats = matriculesDeCage(cage)
+  const depuis = formatDateCourte(cage.occupation_actuelle?.date_debut ?? null)
 
   return (
-    <div
-      className={cn(
-        'relative cursor-pointer transition-all duration-200 rounded-xl border-2',
-        'p-3 aspect-square flex flex-col items-center justify-center gap-1',
-        config.bg,
-        config.border,
-        config.hover,
-        'hover:scale-[1.02] hover:shadow-md',
-        isSelected && 'ring-2 ring-primary ring-offset-2 scale-[1.02] shadow-lg'
-      )}
+    <button
+      type="button"
       onClick={() => setSelectedCage(cage.id)}
+      aria-pressed={isSelected}
+      aria-label={`Cage ${numeroAffiche} — ${config.label}`}
+      className={`cage-card group relative w-full overflow-hidden rounded-2xl border bg-surface-container-lowest p-2.5 pb-3 text-left transition-all duration-300 hover:-translate-y-1 hover:shadow-xl hover:shadow-teal-900/10 ${
+        isSelected
+          ? 'border-[#00685f]/30 ring-2 ring-[#00685f] ring-offset-2 ring-offset-transparent shadow-lg shadow-teal-900/15'
+          : 'border-outline-variant'
+      }`}
     >
-      {/* Numéro cage */}
-      <span className="text-lg font-bold text-gray-900">{cage.numero}</span>
-
-      {/* Icône(s) pigeon */}
-      <div className="flex items-center gap-0.5">
-        {isCouple ? (
-          <>
-            <Bird className={cn('w-5 h-5', config.iconColor)} />
-            <Bird className={cn('w-5 h-5', config.iconColor)} />
-          </>
-        ) : (
-          <Bird className={cn('w-5 h-5', config.iconColor)} />
-        )}
-      </div>
-
-      {/* Label status */}
-      <span className={cn('text-xs font-medium', config.text)}>
+      {/* Badge de statut (sémantique métier : vert / rouge / orange) */}
+      <span
+        className={`absolute left-3 top-3 z-10 inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] font-semibold shadow-sm ${config.chip}`}
+      >
+        <span className={`h-1.5 w-1.5 rounded-full ${config.dot}`} />
         {config.label}
       </span>
 
-      {/* Matricule au survol ou toujours visible si occupé */}
-      {isOccupied && cage.occupation_actuelle && (
-        <span className="text-[10px] text-gray-500 truncate max-w-full px-1 text-center leading-tight">
-          {isCouple && cage.occupation_actuelle.couple
-            ? `${cage.occupation_actuelle.couple.male_details?.matricule || ''} + ${cage.occupation_actuelle.couple.femelle_details?.matricule || ''}`
-            : cage.occupation_actuelle.pigeon?.matricule || ''
-          }
-        </span>
-      )}
-    </div>
+      {/* Scène réaliste : toit, porte à l'avant, pigeons, nichoir, tiroir… */}
+      <svg
+        viewBox="-4 -18 228 206"
+        role="img"
+        aria-hidden="true"
+        className="block w-full"
+        dangerouslySetInnerHTML={{ __html: scene }}
+      />
+
+      {/* Pied de carte : numéro + occupants */}
+      <div className="px-1.5 pt-0.5">
+        <div className="flex items-baseline justify-between gap-2">
+          <span className="text-sm font-bold text-on-surface">
+            Cage&nbsp;{numeroAffiche}
+          </span>
+          {depuis && (
+            <span className="shrink-0 text-[11px] font-medium text-on-surface-variant">
+              depuis le {depuis}
+            </span>
+          )}
+        </div>
+        <p className="mt-0.5 truncate text-[11px] text-on-surface-variant">
+          {mats.length > 0 ? mats.join('  ·  ') : config.hint}
+        </p>
+      </div>
+    </button>
   )
 }
+
+export default CageCard

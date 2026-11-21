@@ -1,43 +1,49 @@
 'use client'
 
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { couplesApi, cagesApi } from '@/lib/api/client'
-import type { Couple, PaginatedResponse, Cage } from '@/types'
-import type { AxiosResponse } from 'axios'
+// ─────────────────────────────────────────────────────────────────────────────
+// hooks/use-couples.ts — hooks React Query des couples d'élevage.
+// Logique métier conservée : CRUD complet, PATCH partiel (partialUpdate),
+// et SÉPARATION qui rompt l'union puis libère automatiquement la cage
+// occupée par le couple (via cagesApi.liberer).
+// ─────────────────────────────────────────────────────────────────────────────
 
-// ─── GET : Liste des couples ───
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { cagesApi, couplesApi } from '@/lib/api/client'
+import type { Cage, Couple, PaginatedResponse } from '@/types'
+
+// ─── GET : Liste des couples ────────────────────────────────────────────────
 export function useCouples() {
   return useQuery<PaginatedResponse<Couple>, Error>({
     queryKey: ['couples'],
     queryFn: async () => {
-      const response: AxiosResponse<PaginatedResponse<Couple>> = await couplesApi.list()
-      return response.data
+      const { data } = await couplesApi.list()
+      return data
     },
     staleTime: 30 * 1000,
     refetchOnWindowFocus: true,
   })
 }
 
-// ─── GET : Détail d'un couple ───
+// ─── GET : Détail d'un couple ───────────────────────────────────────────────
 export function useCouple(id: string) {
   return useQuery<Couple, Error>({
     queryKey: ['couples', id],
     queryFn: async () => {
-      const response: AxiosResponse<Couple> = await couplesApi.get(id)
-      return response.data
+      const { data } = await couplesApi.get(id)
+      return data
     },
     enabled: !!id,
   })
 }
 
-// ─── POST : Créer un couple ───
+// ─── POST : Former un couple ────────────────────────────────────────────────
 export function useCreateCouple() {
   const queryClient = useQueryClient()
 
   return useMutation<Couple, Error, { male: string; femelle: string }>({
     mutationFn: async (data) => {
-      const response: AxiosResponse<Couple> = await couplesApi.create(data)
-      return response.data
+      const { data: couple } = await couplesApi.create(data)
+      return couple
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['couples'] })
@@ -46,56 +52,54 @@ export function useCreateCouple() {
   })
 }
 
-// ─── PATCH : Mettre à jour un couple ───
+// ─── PATCH : Mettre à jour un couple ────────────────────────────────────────
 export function useUpdateCouple() {
   const queryClient = useQueryClient()
 
   return useMutation<Couple, Error, { id: string; data: Partial<Couple> }>({
     mutationFn: async ({ id, data }) => {
-      // 🔧 Utilise partialUpdate (PATCH) au lieu de update (PUT)
-      const response: AxiosResponse<Couple> = await couplesApi.partialUpdate(id, data)
-      return response.data
+      // PATCH et non PUT : on ne modifie que les champs envoyés
+      const { data: couple } = await couplesApi.partialUpdate(id, data)
+      return couple
     },
-    onSuccess: (data) => {
+    onSuccess: (couple) => {
       queryClient.invalidateQueries({ queryKey: ['couples'] })
-      queryClient.invalidateQueries({ queryKey: ['couples', data.id] })
+      queryClient.invalidateQueries({ queryKey: ['couples', couple.id] })
     },
   })
 }
 
-// ─── 🔧 SEPARER UN COUPLE (rompre) ───
+// ─── SÉPARER UN COUPLE (rompre) ─────────────────────────────────────────────
 export function useSeparateCouple() {
   const queryClient = useQueryClient()
 
   return useMutation<Couple, Error, { id: string; date_rupture?: string }>({
     mutationFn: async ({ id, date_rupture }) => {
-      const today = date_rupture || new Date().toISOString().split('T')[0]
+      const aujourdhui = date_rupture || new Date().toISOString().split('T')[0]
 
-      // 🔧 Utilise partialUpdate (PATCH) pour ne modifier que statut et date_rupture
-      const response: AxiosResponse<Couple> = await couplesApi.partialUpdate(id, {
+      // 1. PATCH : ne modifie que statut et date_rupture
+      const { data: couple } = await couplesApi.partialUpdate(id, {
         statut: 'rompu',
-        date_rupture: today,
+        date_rupture: aujourdhui,
       })
 
       // 2. Récupère TOUTES les cages pour trouver celle du couple
       const { data: cagesData } = await cagesApi.list()
-      const cages = (cagesData.results || cagesData) as Cage[]
+      const cages = (Array.isArray(cagesData) ? cagesData : cagesData.results) as Cage[]
 
       // 3. Trouve la cage occupée par ce couple
-      const cageOccupee = cages.find((cage: Cage) => {
-        if (!cage.occupation_actuelle) return false
-        if (cage.occupation_actuelle.type === 'couple' && cage.occupation_actuelle.couple?.id === id) {
-          return true
-        }
-        return false
-      })
+      const cageOccupee = cages.find(
+        (cage) =>
+          cage.occupation_actuelle?.type === 'couple' &&
+          cage.occupation_actuelle.couple?.id === id,
+      )
 
       // 4. Libère la cage si trouvée
       if (cageOccupee) {
         await cagesApi.liberer(cageOccupee.id)
       }
 
-      return response.data
+      return couple
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['couples'] })
@@ -106,7 +110,7 @@ export function useSeparateCouple() {
   })
 }
 
-// ─── DELETE : Supprimer un couple ───
+// ─── DELETE : Supprimer un couple ───────────────────────────────────────────
 export function useDeleteCouple() {
   const queryClient = useQueryClient()
 
