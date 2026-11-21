@@ -7,6 +7,7 @@ import { useAuthStore } from '@/stores/auth-store'
 import { AlertCircle, Feather, Egg, BarChart3 } from 'lucide-react'
 import Link from 'next/link'
 import { setTokenCookie } from '@/lib/auth-cookie'
+
 /* ═══════════════════════════════════════════════════════════
    Décor animé : pigeon photoréaliste qui bat des ailes
    (2 poses alternées) + cages avec vrais pigeons posés
@@ -17,29 +18,53 @@ const VOL_B = '/pigeon-vol-b.png'        // ailes vers le bas
 const VOL_RATIO = 1.225                  // 686 / 560
 const PERCHE_SRC = '/pigeon-perche.png'  // pigeon posé dans les cages
 const PERCHE_RATIO = 0.989               // 554 / 560
+const LOGO_SRC = '/pigeon-logo.jpg'      // portrait dédié du logo (carré, fond teal)
 
-/* Silhouette — réservée aux logos */
-function PigeonSVG({ width = 36, className = '' }: { width?: number; className?: string }) {
+/* ═══════════════════════════════════════════════════════════
+   Médaillon logo photoréaliste — utilisé à gauche (hero)
+   ET à droite (formulaire) pour un rendu identique partout
+   ═══════════════════════════════════════════════════════════ */
+
+function BadgeLogo({ taille = 64, sombre = false }: { taille?: number; sombre?: boolean }) {
+  const [src, setSrc] = useState(LOGO_SRC)
+
   return (
-    <svg
-      width={width}
-      height={Math.round((width * 48) / 64)}
-      viewBox="0 0 64 48"
-      fill="currentColor"
-      className={className}
-      aria-hidden="true"
-    >
-      <g className="pm-aile-d" opacity="0.5">
-        <path d="M29 25 C26 12 18 4 7 3 C15 11 23 20 28 31 Z" />
-      </g>
-      <path d="M21 27 C14 24 8 24 3 27 C9 30 15 31 21 31 Z" />
-      <ellipse cx="31" cy="29" rx="11" ry="5.5" />
-      <circle cx="41" cy="23.5" r="4.3" />
-      <path d="M45 22 L50.5 23.8 L45 25.6 Z" />
-      <g className="pm-aile-g">
-        <path d="M32 27 C30 14 22 6 10 4 C18 12 26 21 30 33 Z" />
-      </g>
-    </svg>
+    <div className="relative flex-shrink-0" style={{ width: taille, height: taille }}>
+      {/* halo lumineux derrière le médaillon */}
+      <div
+        className={`absolute -inset-2 rounded-2xl opacity-60 blur-md ${
+          sombre
+            ? 'bg-gradient-to-br from-emerald-300/60 via-white/25 to-transparent'
+            : 'bg-gradient-to-br from-[#00685f] via-emerald-300/70 to-[#01352f]'
+        }`}
+      />
+
+      {/* médaillon photo */}
+      <div
+        className={`relative h-full w-full overflow-hidden rounded-2xl bg-gradient-to-br from-[#00685f] to-[#01352f] shadow-lg ring-2 ring-white ${
+          sombre ? 'shadow-black/40' : 'shadow-[#00685f]/40'
+        }`}
+      >
+        <img
+          src={src}
+          alt="PigeonManager"
+          draggable={false}
+          onError={() => setSrc(PERCHE_SRC)}
+          className="h-full w-full object-cover"
+        />
+        {/* voile teal en bas + reflet vitré en haut */}
+        <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-[#01352f]/40 via-transparent to-transparent" />
+        <div className="pointer-events-none absolute inset-x-0 top-0 h-1/2 bg-gradient-to-b from-white/20 to-transparent" />
+      </div>
+
+      {/* pastille plume */}
+      <span
+        className="absolute -bottom-1.5 -right-1.5 flex items-center justify-center rounded-full bg-white shadow-md ring-1 ring-[#00685f]/30"
+        style={{ width: Math.round(taille * 0.36), height: Math.round(taille * 0.36) }}
+      >
+        <Feather className="text-[#00685f]" style={{ width: taille * 0.18, height: taille * 0.18 }} />
+      </span>
+    </div>
   )
 }
 
@@ -94,7 +119,7 @@ function PigeonVolant({
             aria-hidden="true"
             width={taille}
             height={hauteur}
-            loading="eager" 
+            loading="eager"
             draggable={false}
             className="pm-cadre-a absolute inset-0"
             style={{ objectFit: 'contain' }}
@@ -105,7 +130,7 @@ function PigeonVolant({
             aria-hidden="true"
             width={taille}
             height={hauteur}
-            loading="eager" 
+            loading="eager"
             draggable={false}
             className="pm-cadre-b absolute inset-0"
             style={{ objectFit: 'contain' }}
@@ -189,7 +214,7 @@ function CageSuspendue({
         aria-hidden="true"
         width={pLargeur}
         height={pHauteur}
-        loading="eager" 
+        loading="eager"
         draggable={false}
         className="absolute"
         style={{
@@ -223,12 +248,12 @@ export default function LoginForm() {
   const redirect = searchParams.get('redirect') || '/'
 
   useEffect(() => {
-  if (isAuthenticated && !isLoading) {
-    const token = localStorage.getItem('access_token')
-    if (token) setTokenCookie(token) // arme le cookie AVANT de naviguer
-    router.replace(redirect)
-  }
-}, [isAuthenticated, isLoading, router, redirect])
+    if (isAuthenticated && !isLoading) {
+      const token = localStorage.getItem('access_token')
+      if (token) setTokenCookie(token) // arme le cookie AVANT de naviguer
+      router.replace(redirect)
+    }
+  }, [isAuthenticated, isLoading, router, redirect])
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -273,8 +298,8 @@ export default function LoginForm() {
 
         {/* message de marque */}
         <div className="relative z-10 m-auto max-w-md px-10 text-center">
-          <div className="pm-apparition mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-2xl border border-white/20 bg-white/10 backdrop-blur">
-            <PigeonSVG width={40} />
+          <div className="pm-apparition mb-6 flex justify-center">
+            <BadgeLogo taille={72} sombre />
           </div>
           <h1
             className="pm-apparition text-3xl font-semibold tracking-tight"
@@ -314,22 +339,10 @@ export default function LoginForm() {
           <div className="h-1 bg-gradient-to-r from-[#00685f] via-emerald-400 to-[#00685f]" />
 
           <div className="p-8 md:p-10">
-            {/* marque (visible aussi sur mobile) */}
-           <div className="relative mb-4 h-16 w-16">
-  <div className="absolute -inset-1.5 rounded-2xl bg-gradient-to-br from-[#00685f] via-emerald-300/70 to-[#01352f] opacity-60 blur-md" />
-  <div className="relative h-16 w-16 overflow-hidden rounded-2xl bg-[#00685f] shadow-lg shadow-[#00685f]/40 ring-2 ring-white">
-    <img
-      src="/pigeon-logo.jpg"
-      alt="PigeonManager"
-      draggable={false}
-      className="h-full w-full object-cover object-[50%_42%]"
-    />
-    <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-[#00685f]/35 via-transparent to-transparent" />
-  </div>
-  <span className="absolute -bottom-1.5 -right-1.5 flex h-6 w-6 items-center justify-center rounded-full bg-white shadow-md ring-1 ring-[#00685f]/25">
-    <Feather className="h-3 w-3 text-[#00685f]" />
-  </span>
-</div>
+            {/* marque (visible aussi sur mobile) — centrée au-dessus du formulaire */}
+            <div className="pm-apparition mb-4 flex justify-center">
+              <BadgeLogo taille={64} />
+            </div>
 
             {/* erreur */}
             {error && (
