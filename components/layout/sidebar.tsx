@@ -20,6 +20,7 @@ import {
   User,
   Stethoscope,
   CalendarDays,
+  Dna,
 } from 'lucide-react'
 import { useStatsSante } from '@/hooks/use-sante'
 
@@ -36,6 +37,7 @@ const SECTIONS_NAV = [
     titre: 'Élevage',
     items: [
       { href: '/couples', label: 'Couples', icon: Heart },
+      { href: '/couples/simulation', label: 'Génétique', icon: Dna },
       { href: '/reproductions', label: 'Reproductions', icon: Egg },
       { href: '/sales', label: 'Sorties', icon: ArrowUpRight },
     ],

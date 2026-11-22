@@ -16,6 +16,7 @@ import { Card } from '@/components/ui/card'
 import { ArrowLeft, Printer, Download, Share2, Bird } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { toast } from 'sonner'
+import { telechargerPedigreePdf } from '@/hooks/use-genetique'
 import { PigeonPhoto } from '@/components/pigeons/pigeon-photo'
 
 // Styles d'impression embarqués dans la page (fonctionne même sans
@@ -71,8 +72,8 @@ export default function PedigreePage() {
   const handleExportPDF = async () => {
     setIsExporting(true)
     try {
-      window.print()
-      toast.success('PDF généré')
+      await telechargerPedigreePdf(pigeon.id, pigeon.matricule)
+      toast.success('PDF officiel téléchargé (QR inclus)')
     } catch {
       toast.error('Erreur lors de l\'export')
     } finally {

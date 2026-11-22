@@ -326,3 +326,49 @@ export interface CreateReproductionPayload {
     couleur: string
   }>
 }
+
+// ── Génétique : simulation de couple (COI) + pedigree PDF ────────────────
+
+export interface AncetreCommun {
+  id: string
+  matricule: string
+  sexe?: 'M' | 'F' | null
+  race?: string | null
+  /** Part de ce point dans le COI du descendant (somme = COI). */
+  contribution: number
+  /** Chaîne prête à afficher, ex. "12,50". */
+  contribution_pourcent: string
+  /** Distance en générations côté mâle (0 = le mâle lui-même). */
+  gen_male: number
+  /** Distance en générations côté femelle. */
+  gen_femelle: number
+  /** Consanguinité propre de cet ancêtre. */
+  coi_ancetre: number
+}
+
+export interface InfoPigeonGenetique {
+  id: string
+  matricule: string
+  sexe?: 'M' | 'F'
+  sexe_display?: string
+  race?: string | null
+  couleur?: string | null
+  generation?: number
+  /** Consanguinité propre du parent. */
+  coi: number
+}
+
+export interface ResultatSimulation {
+  male: InfoPigeonGenetique
+  femelle: InfoPigeonGenetique
+  descendant: {
+    coi: number
+    coi_pourcent: string
+    niveau: 'faible' | 'modere' | 'eleve' | 'tres_eleve'
+    niveau_label: string
+    couleur: string
+    message: string
+  }
+  ancetres_communs: AncetreCommun[]
+  profondeur_analyse: number
+}

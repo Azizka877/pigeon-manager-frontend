@@ -246,3 +246,22 @@ export const santeApi = {
 
 
 export default apiClient
+
+
+// ── Génétique : simulation de couple + pedigree PDF ──────────────────────
+import type { ResultatSimulation } from '@/types'
+
+export const genetiqueApi = {
+  simuler: (
+    maleId: string,
+    femelleId: string,
+  ): Promise<AxiosResponse<ResultatSimulation>> =>
+    apiClient.post('/genetique/simulation/', {
+      male_id: maleId,
+      femelle_id: femelleId,
+    }),
+
+  /** PDF officiel généré par le backend (réponse binaire). */
+  pedigreePdf: (pigeonId: string): Promise<AxiosResponse<Blob>> =>
+    apiClient.get(`/pigeons/${pigeonId}/pedigree/`, { responseType: 'blob' }),
+}
