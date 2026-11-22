@@ -1,6 +1,7 @@
 import { StatsCards } from '@/components/dashboard/stats-cards'
 import { RecentActivity } from '@/components/dashboard/recent-activity'
 import { AlertsPanel } from '@/components/dashboard/alerts-panel'
+import { RappelsPanel } from '@/components/dashboard/rappels-panel'
 import { WelcomeBanner } from '@/components/dashboard/welcome-banner'
 import { SexeDistribution } from '@/components/dashboard/charts/sexe-distribution'
 import { OccupationGauge } from '@/components/dashboard/charts/occupation-gauge'
@@ -28,6 +29,7 @@ export default function DashboardPage() {
         {/* Colonne latérale (1/3) */}
         <div className="space-y-6">
           <AlertsPanel />
+          <RappelsPanel />
         </div>
       </div>
     </div>

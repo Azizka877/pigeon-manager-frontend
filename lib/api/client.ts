@@ -11,6 +11,7 @@ import type { TokenResponse, User, Cage, PaginatedResponse, Pigeon, Couple,
    JeuneData,
    PigeonMini} from '@/types'
 import type { HistoriqueItem } from '@/types'
+import type { Soin, Rappel, AgendaReponse, SanteStats } from '@/types/sante'
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api'
 import type { RecentActivityResponse } from '@/types'
 
@@ -216,6 +217,32 @@ export const genealogieApi = {
     apiClient.get(`/pigeons/${pigeonId}/descendants/`),
 }
 
+
+// ── Santé & Rappels API ─────────────────────────────────────────────────────
+export const santeApi = {
+  listSoins: (params?: { pigeon?: string | number; type_soin?: string; search?: string }): Promise<AxiosResponse<PaginatedResponse<Soin>>> =>
+    apiClient.get('/sante/soins/', { params }),
+  createSoin: (data: Partial<Soin>): Promise<AxiosResponse<Soin>> =>
+    apiClient.post('/sante/soins/', data),
+  updateSoin: (id: number, data: Partial<Soin>): Promise<AxiosResponse<Soin>> =>
+    apiClient.patch(`/sante/soins/${id}/`, data),
+  deleteSoin: (id: number): Promise<AxiosResponse<void>> =>
+    apiClient.delete(`/sante/soins/${id}/`),
+
+  listRappels: (params?: { fait?: boolean; type_rappel?: string; pigeon?: string | number }): Promise<AxiosResponse<PaginatedResponse<Rappel>>> =>
+    apiClient.get('/sante/rappels/', { params }),
+  createRappel: (data: Partial<Rappel>): Promise<AxiosResponse<Rappel>> =>
+    apiClient.post('/sante/rappels/', data),
+  updateRappel: (id: number, data: Partial<Rappel>): Promise<AxiosResponse<Rappel>> =>
+    apiClient.patch(`/sante/rappels/${id}/`, data),
+  deleteRappel: (id: number): Promise<AxiosResponse<void>> =>
+    apiClient.delete(`/sante/rappels/${id}/`),
+
+  agenda: (debut?: string, fin?: string): Promise<AxiosResponse<AgendaReponse>> =>
+    apiClient.get('/sante/agenda/', { params: { debut, fin } }),
+  stats: (): Promise<AxiosResponse<SanteStats>> =>
+    apiClient.get('/sante/stats/'),
+}
 
 
 export default apiClient

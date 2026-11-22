@@ -18,7 +18,10 @@ import {
   Menu,
   X,
   User,
+  Stethoscope,
+  CalendarDays,
 } from 'lucide-react'
+import { useStatsSante } from '@/hooks/use-sante'
 
 const SECTIONS_NAV = [
   {
@@ -38,6 +41,13 @@ const SECTIONS_NAV = [
     ],
   },
   {
+    titre: 'Suivi',
+    items: [
+      { href: '/sante', label: 'Santé', icon: Stethoscope },
+      { href: '/agenda', label: 'Agenda', icon: CalendarDays },
+    ],
+  },
+  {
     titre: 'Compte',
     items: [{ href: '/profile', label: 'Profil', icon: User }],
   },
@@ -51,6 +61,8 @@ export function Sidebar() {
   const logout = useAuthStore((s) => s.logout)
   const sidebarOpen = useUIStore((s) => s.sidebarOpen)
   const setSidebarOpen = useUIStore((s) => s.setSidebarOpen)
+  const { data: statsSante } = useStatsSante()
+  const rappelsEnRetard = statsSante?.rappels_en_retard ?? 0
 
  const handleLogout = () => {
   clearTokenCookie()
@@ -115,6 +127,11 @@ export function Sidebar() {
                 >
                   <Icon className="h-5 w-5 shrink-0" />
                   {item.label}
+                  {item.href === '/sante' && rappelsEnRetard > 0 && !isActive && (
+                    <span className="ml-auto inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-red-100 px-1.5 text-[10px] font-bold text-red-600">
+                      {rappelsEnRetard}
+                    </span>
+                  )}
                   {isActive && <span className="ml-auto h-1.5 w-1.5 rounded-full bg-white/90" />}
                 </Link>
               )
