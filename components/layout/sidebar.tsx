@@ -57,6 +57,13 @@ const SECTIONS_NAV = [
 
 export function Sidebar() {
   const pathname = usePathname()
+
+  // Onglet actif : le lien qui correspond le PLUS précisément à l'URL gagne.
+  // Sans cela, « Couples » (/couples) restait allumé aussi sur /couples/simulation.
+  const hrefActif = SECTIONS_NAV.flatMap((section) => section.items.map((item) => item.href))
+    .filter((href) => pathname === href || pathname.startsWith(`${href}/`))
+    .sort((a, b) => b.length - a.length)[0] ?? ''
+
   const router = useRouter()
   const user = useAuthStore((s) => s.user)
   const isAuthenticated = useAuthStore((s) => s.isAuthenticated)
@@ -66,11 +73,11 @@ export function Sidebar() {
   const { data: statsSante } = useStatsSante()
   const rappelsEnRetard = statsSante?.rappels_en_retard ?? 0
 
- const handleLogout = () => {
-  clearTokenCookie()
-  logout()
-  router.push('/login')
-}
+  const handleLogout = () => {
+    clearTokenCookie()
+    logout()
+    router.push('/login')
+  }
 
   const navContent = (
     <>
@@ -114,7 +121,7 @@ export function Sidebar() {
             </p>
             {section.items.map((item) => {
               const Icon = item.icon
-              const isActive = pathname === item.href || pathname.startsWith(`${item.href}/`)
+              const isActive = item.href === hrefActif
               return (
                 <Link
                   key={item.href}
