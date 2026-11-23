@@ -344,7 +344,7 @@ export default function SimulationPage() {
       </div>
 
       <Tabs defaultValue="simulation" className="@container w-full">
-        <TabsList className="grid w-full max-w-md grid-cols-2">
+        <TabsList className="grid w-full max-w-md grid-cols-2 barre-onglets-genetique">
           <TabsTrigger value="simulation" className="min-w-0 gap-1 px-2 text-xs @sm:gap-1.5 @sm:px-3 @sm:text-sm">
             <FlaskConical className="h-4 w-4 @max-sm:hidden" />
             Simulation
@@ -356,7 +356,8 @@ export default function SimulationPage() {
         </TabsList>
 
         {/* ── Onglet Simulation ── */}
-        <TabsContent value="simulation" className="mt-5">
+        <h2 className="titre-section-genetique mb-3 mt-6 text-base font-bold text-gray-900">Simulation de croisement</h2>
+          <TabsContent value="simulation" className="panneau-genetique mt-5">
           {isLoading ? (
             <div className="flex h-64 items-center justify-center">
               <div className="h-12 w-12 animate-spin rounded-full border-b-2 border-[#00685f]" />
@@ -415,7 +416,8 @@ export default function SimulationPage() {
         </TabsContent>
 
         {/* ── Onglet Pedigree PDF ── */}
-        <TabsContent value="pedigree" className="mt-5">
+        <h2 className="titre-section-genetique mb-3 mt-8 text-base font-bold text-gray-900">Pedigree PDF officiel</h2>
+          <TabsContent value="pedigree" className="panneau-genetique mt-5">
           <div className="mx-auto max-w-xl space-y-5">
             <SelecteurPigeon
               titre="Pigeon du pedigree"

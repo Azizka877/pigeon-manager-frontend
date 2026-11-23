@@ -542,3 +542,10 @@
     transform: none !important;
   }
 }
+/* ── Génétique : sous 1024px, on empile Simulation puis Pedigree (pas d'onglets) ── */
+.titre-section-genetique { display: none; }
+@media (max-width: 1023.98px) {
+  .barre-onglets-genetique { display: none !important; }
+  .panneau-genetique { display: block !important; }
+  .titre-section-genetique { display: block; }
+}
