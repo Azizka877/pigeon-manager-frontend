@@ -6,6 +6,10 @@
 // ancêtres communs et recommandation d'élevage.
 // Onglet 2 : pedigree PDF officiel — document imprimable avec QR de
 // partage public généré par le backend.
+//
+// NB : bascule par boutons + état React (pas le composant Tabs), car
+// ses variantes CSS personnalisées ne s'appliquaient pas dans notre
+// configuration et provoquaient des chevauchements en largeur réduite.
 
 import Link from 'next/link'
 import { useMemo, useState } from 'react'
@@ -15,7 +19,6 @@ import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import {
   ArrowLeft,
   Bird,
@@ -294,6 +297,7 @@ export default function SimulationPage() {
   const [femelle, setFemelle] = useState<Pigeon | null>(null)
   const [pigeonPedigree, setPigeonPedigree] = useState<Pigeon | null>(null)
   const [telechargement, setTelechargement] = useState(false)
+  const [ongletActif, setOngletActif] = useState<'simulation' | 'pedigree'>('simulation')
 
   const males = useMemo(() => pigeons.filter((p) => p.sexe === 'M' && p.statut === 'actif'), [pigeons])
   const femelles = useMemo(() => pigeons.filter((p) => p.sexe === 'F' && p.statut === 'actif'), [pigeons])
@@ -322,6 +326,14 @@ export default function SimulationPage() {
     }
   }
 
+  const styleBoutonOnglet = (actif: boolean) =>
+    cn(
+      'flex items-center gap-2 rounded-xl px-4 py-2.5 text-sm font-semibold transition-colors',
+      actif
+        ? 'bg-[#00685f] text-white shadow-md shadow-[#00685f]/25'
+        : 'bg-gray-100 text-gray-600 hover:bg-gray-200 hover:text-gray-900',
+    )
+
   return (
     <div className="space-y-6">
       <div>
@@ -343,126 +355,132 @@ export default function SimulationPage() {
         </p>
       </div>
 
-      <Tabs defaultValue="simulation" className="@container w-full">
-        <TabsList className="grid w-full max-w-md grid-cols-2 barre-onglets-genetique">
-          <TabsTrigger value="simulation" className="min-w-0 gap-1 px-2 text-xs @sm:gap-1.5 @sm:px-3 @sm:text-sm">
-            <FlaskConical className="h-4 w-4 @max-sm:hidden" />
-            Simulation
-          </TabsTrigger>
-          <TabsTrigger value="pedigree" className="min-w-0 gap-1 px-2 text-xs @sm:gap-1.5 @sm:px-3 @sm:text-sm">
-            <ScanLine className="h-4 w-4 @max-sm:hidden" />
-            Pedigree PDF
-          </TabsTrigger>
-        </TabsList>
+      {/* ── Sélecteur de section : boutons simples, passent à la ligne si étroit ── */}
+      <div className="flex flex-wrap gap-2" role="tablist">
+        <button
+          type="button"
+          role="tab"
+          aria-selected={ongletActif === 'simulation'}
+          onClick={() => setOngletActif('simulation')}
+          className={styleBoutonOnglet(ongletActif === 'simulation')}
+        >
+          <FlaskConical className="h-4 w-4" />
+          Simulation
+        </button>
+        <button
+          type="button"
+          role="tab"
+          aria-selected={ongletActif === 'pedigree'}
+          onClick={() => setOngletActif('pedigree')}
+          className={styleBoutonOnglet(ongletActif === 'pedigree')}
+        >
+          <ScanLine className="h-4 w-4" />
+          Pedigree PDF
+        </button>
+      </div>
 
-        {/* ── Onglet Simulation ── */}
-        <h2 className="titre-section-genetique mb-3 mt-6 text-base font-bold text-gray-900">Simulation de croisement</h2>
-          <TabsContent value="simulation" className="panneau-genetique mt-5">
-          {isLoading ? (
-            <div className="flex h-64 items-center justify-center">
-              <div className="h-12 w-12 animate-spin rounded-full border-b-2 border-[#00685f]" />
+      {ongletActif === 'simulation' &&
+        (isLoading ? (
+          <div className="flex h-64 items-center justify-center">
+            <div className="h-12 w-12 animate-spin rounded-full border-b-2 border-[#00685f]" />
+          </div>
+        ) : (
+          <div className="space-y-5">
+            <div className="grid gap-4 lg:grid-cols-2">
+              <SelecteurPigeon
+                titre="Le mâle"
+                sousTitre="pigeons actifs"
+                pigeons={males}
+                valeur={male}
+                onChange={setMale}
+                accent="teal"
+              />
+              <SelecteurPigeon
+                titre="La femelle"
+                sousTitre="pigeons actifs"
+                pigeons={femelles}
+                valeur={femelle}
+                onChange={setFemelle}
+                accent="amber"
+              />
             </div>
-          ) : (
-            <div className="space-y-5">
-              <div className="grid gap-4 lg:grid-cols-2">
-                <SelecteurPigeon
-                  titre="Le mâle"
-                  sousTitre="pigeons actifs"
-                  pigeons={males}
-                  valeur={male}
-                  onChange={setMale}
-                  accent="teal"
-                />
-                <SelecteurPigeon
-                  titre="La femelle"
-                  sousTitre="pigeons actifs"
-                  pigeons={femelles}
-                  valeur={femelle}
-                  onChange={setFemelle}
-                  accent="amber"
-                />
-              </div>
-
-              <Button
-                onClick={lancerSimulation}
-                disabled={simulation.isPending}
-                className="h-12 w-full gap-2 bg-[#00685f] text-base text-white hover:bg-[#005651] hover:text-white"
-              >
-                <FlaskConical className="h-5 w-5" />
-                {simulation.isPending ? 'Calcul en cours…' : 'Calculer la consanguinité prévue'}
-              </Button>
-
-              {simulation.isError && (
-                <Card className="border-red-100 bg-red-50/60 p-4 text-sm text-red-700">
-                  {(simulation.error as any)?.response?.data?.detail ||
-                    'Erreur lors du calcul. Réessayez.'}
-                </Card>
-              )}
-
-              {simulation.data && <ResultatSimulationPanel simulation={simulation.data} />}
-
-              {!simulation.data && !simulation.isPending && (
-                <div className="flex items-start gap-2 rounded-xl bg-[#f5faf8] px-4 py-3 text-sm text-[#00685f]/80">
-                  <Info className="mt-0.5 h-4 w-4 shrink-0" />
-                  Le COI (coefficient de consanguinité de Wright) mesure la
-                  part des gènes que le descendant prévu recevrait en double,
-                  par ses deux parents. En dessous de 2&nbsp;% le croisement
-                  est considéré comme sûr ; au-delà de 12,5&nbsp;% il relie
-                  des parents très proches.
-                </div>
-              )}
-            </div>
-          )}
-        </TabsContent>
-
-        {/* ── Onglet Pedigree PDF ── */}
-        <h2 className="titre-section-genetique mb-3 mt-8 text-base font-bold text-gray-900">Pedigree PDF officiel</h2>
-          <TabsContent value="pedigree" className="panneau-genetique mt-5">
-          <div className="mx-auto max-w-xl space-y-5">
-            <SelecteurPigeon
-              titre="Pigeon du pedigree"
-              sousTitre="tous les pigeons"
-              pigeons={pigeons}
-              valeur={pigeonPedigree}
-              onChange={setPigeonPedigree}
-              accent="teal"
-            />
 
             <Button
-              onClick={telecharger}
-              disabled={telechargement || !pigeonPedigree}
+              onClick={lancerSimulation}
+              disabled={simulation.isPending}
               className="h-12 w-full gap-2 bg-[#00685f] text-base text-white hover:bg-[#005651] hover:text-white"
             >
-              <Download className="h-5 w-5" />
-              {telechargement ? 'Génération du PDF…' : 'Télécharger le pedigree PDF'}
+              <FlaskConical className="h-5 w-5" />
+              {simulation.isPending ? 'Calcul en cours…' : 'Calculer la consanguinité prévue'}
             </Button>
 
-            <Card className="p-5">
-              <h3 className="mb-3 flex items-center gap-2 text-sm font-bold text-gray-900">
-                <ScanLine className="h-4 w-4 text-[#00685f]" />
-                Ce que contient le document
-              </h3>
-              <ul className="space-y-2.5 text-sm text-gray-600">
-                <li className="flex gap-2.5">
-                  <Bird className="mt-0.5 h-4 w-4 shrink-0 text-[#00685f]/50" />
-                  Arbre généalogique sur 4 générations (mâles et femelles
-                  différenciés, ascendants inconnus clairement marqués).
-                </li>
-                <li className="flex gap-2.5">
-                  <Dna className="mt-0.5 h-4 w-4 shrink-0 text-[#00685f]/50" />
-                  Badge de consanguinité du pigeon calculé sur 6 générations.
-                </li>
-                <li className="flex gap-2.5">
-                  <ScanLine className="mt-0.5 h-4 w-4 shrink-0 text-[#00685f]/50" />
-                  Un QR code de vérification : n’importe qui peut scanner le
-                  document imprimé pour rouvrir le pedigree officiel, sans
-                  compte ni mot de passe.
-                </li>
-              </ul>
-            </Card>
+            {simulation.isError && (
+              <Card className="border-red-100 bg-red-50/60 p-4 text-sm text-red-700">
+                {(simulation.error as any)?.response?.data?.detail ||
+                  'Erreur lors du calcul. Réessayez.'}
+              </Card>
+            )}
+
+            {simulation.data && <ResultatSimulationPanel simulation={simulation.data} />}
+
+            {!simulation.data && !simulation.isPending && (
+              <div className="flex items-start gap-2 rounded-xl bg-[#f5faf8] px-4 py-3 text-sm text-[#00685f]/80">
+                <Info className="mt-0.5 h-4 w-4 shrink-0" />
+                Le COI (coefficient de consanguinité de Wright) mesure la
+                part des gènes que le descendant prévu recevrait en double,
+                par ses deux parents. En dessous de 2&nbsp;% le croisement
+                est considéré comme sûr ; au-delà de 12,5&nbsp;% il relie
+                des parents très proches.
+              </div>
+            )}
           </div>
-        </TabsContent>
-      </Tabs>
+        ))}
+
+      {ongletActif === 'pedigree' && (
+        <div className="mx-auto max-w-xl space-y-5">
+          <SelecteurPigeon
+            titre="Pigeon du pedigree"
+            sousTitre="tous les pigeons"
+            pigeons={pigeons}
+            valeur={pigeonPedigree}
+            onChange={setPigeonPedigree}
+            accent="teal"
+          />
+
+          <Button
+            onClick={telecharger}
+            disabled={telechargement || !pigeonPedigree}
+            className="h-12 w-full gap-2 bg-[#00685f] text-base text-white hover:bg-[#005651] hover:text-white"
+          >
+            <Download className="h-5 w-5" />
+            {telechargement ? 'Génération du PDF…' : 'Télécharger le pedigree PDF'}
+          </Button>
+
+          <Card className="p-5">
+            <h3 className="mb-3 flex items-center gap-2 text-sm font-bold text-gray-900">
+              <ScanLine className="h-4 w-4 text-[#00685f]" />
+              Ce que contient le document
+            </h3>
+            <ul className="space-y-2.5 text-sm text-gray-600">
+              <li className="flex gap-2.5">
+                <Bird className="mt-0.5 h-4 w-4 shrink-0 text-[#00685f]/50" />
+                Arbre généalogique sur 4 générations (mâles et femelles
+                différenciés, ascendants inconnus clairement marqués).
+              </li>
+              <li className="flex gap-2.5">
+                <Dna className="mt-0.5 h-4 w-4 shrink-0 text-[#00685f]/50" />
+                Badge de consanguinité du pigeon calculé sur 6 générations.
+              </li>
+              <li className="flex gap-2.5">
+                <ScanLine className="mt-0.5 h-4 w-4 shrink-0 text-[#00685f]/50" />
+                Un QR code de vérification : n’importe qui peut scanner le
+                document imprimé pour rouvrir le pedigree officiel, sans
+                compte ni mot de passe.
+              </li>
+            </ul>
+          </Card>
+        </div>
+      )}
     </div>
   )
 }
