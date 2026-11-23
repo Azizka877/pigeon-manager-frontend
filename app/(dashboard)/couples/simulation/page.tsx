@@ -229,7 +229,7 @@ function ResultatSimulationPanel({ simulation }: { simulation: ResultatSimulatio
             lignée enregistrée.
           </div>
         ) : (
-          <div className="overflow-hidden rounded-xl border border-gray-100">
+          <div className="overflow-x-auto rounded-xl border border-gray-100">
             <table className="w-full text-sm">
               <thead>
                 <tr className="bg-gray-50 text-left text-[11px] uppercase tracking-wider text-gray-400">
@@ -345,12 +345,12 @@ export default function SimulationPage() {
 
       <Tabs defaultValue="simulation" className="w-full">
         <TabsList className="grid w-full max-w-md grid-cols-2">
-          <TabsTrigger value="simulation" className="gap-1.5">
-            <FlaskConical className="h-4 w-4" />
+          <TabsTrigger value="simulation" className="min-w-0 gap-1 px-2 text-xs sm:gap-1.5 sm:px-3 sm:text-sm">
+            <FlaskConical className="h-4 w-4 max-sm:hidden" />
             Simulation
           </TabsTrigger>
-          <TabsTrigger value="pedigree" className="gap-1.5">
-            <ScanLine className="h-4 w-4" />
+          <TabsTrigger value="pedigree" className="min-w-0 gap-1 px-2 text-xs sm:gap-1.5 sm:px-3 sm:text-sm">
+            <ScanLine className="h-4 w-4 max-sm:hidden" />
             Pedigree PDF
           </TabsTrigger>
         </TabsList>
