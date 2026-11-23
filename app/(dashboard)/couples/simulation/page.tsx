@@ -343,14 +343,14 @@ export default function SimulationPage() {
         </p>
       </div>
 
-      <Tabs defaultValue="simulation" className="w-full">
+      <Tabs defaultValue="simulation" className="@container w-full">
         <TabsList className="grid w-full max-w-md grid-cols-2">
-          <TabsTrigger value="simulation" className="min-w-0 gap-1 px-2 text-xs sm:gap-1.5 sm:px-3 sm:text-sm">
-            <FlaskConical className="h-4 w-4 max-sm:hidden" />
+          <TabsTrigger value="simulation" className="min-w-0 gap-1 px-2 text-xs @sm:gap-1.5 @sm:px-3 @sm:text-sm">
+            <FlaskConical className="h-4 w-4 @max-sm:hidden" />
             Simulation
           </TabsTrigger>
-          <TabsTrigger value="pedigree" className="min-w-0 gap-1 px-2 text-xs sm:gap-1.5 sm:px-3 sm:text-sm">
-            <ScanLine className="h-4 w-4 max-sm:hidden" />
+          <TabsTrigger value="pedigree" className="min-w-0 gap-1 px-2 text-xs @sm:gap-1.5 @sm:px-3 @sm:text-sm">
+            <ScanLine className="h-4 w-4 @max-sm:hidden" />
             Pedigree PDF
           </TabsTrigger>
         </TabsList>
