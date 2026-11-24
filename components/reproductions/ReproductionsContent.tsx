@@ -194,14 +194,14 @@ export default function ReproductionsContent() {
       )}
 
       {/* ── Filtres segmentés par phase ── */}
-      <div className="flex items-center gap-1 self-start rounded-2xl border border-outline-variant bg-surface-container p-1">
+      <div className="flex flex-wrap items-center gap-1 self-start rounded-2xl border border-outline-variant bg-surface-container p-1">
         {FILTRES.map((f) => (
           <button
             key={f.valeur}
             type="button"
             onClick={() => setFiltrePhase(f.valeur)}
             className={cn(
-              'flex items-center gap-1.5 rounded-xl px-3 py-1.5 text-[13px] font-semibold transition-all',
+              'flex items-center gap-1.5 whitespace-nowrap rounded-xl px-3 py-1.5 text-[13px] font-semibold transition-all',
               filtrePhase === f.valeur
                 ? 'bg-[#00685f] text-white shadow-sm shadow-teal-900/20'
                 : 'text-on-surface-variant hover:text-on-surface',
@@ -223,29 +223,30 @@ export default function ReproductionsContent() {
       </div>
 
       {/* ══ Vue desktop : tableau des cycles ══ */}
-      <div className="hidden overflow-hidden rounded-3xl border border-outline-variant bg-surface-container-lowest md:block">
+      <div className="hidden overflow-hidden rounded-3xl border border-outline-variant bg-surface-container-lowest lg:block">
         {filtresActifs.length === 0 ? (
           <EtatVide filtreActif={filtrePhase !== 'tous' || !!coupleFilter} />
         ) : (
-        <table className="w-full">
+        <div className="overflow-x-auto">
+        <table className="w-full min-w-[640px]">
           <thead>
             <tr className="border-b border-outline-variant bg-surface-container">
-              <th className="px-6 py-4 text-left text-[11px] font-bold uppercase tracking-wider text-on-surface-variant">
+              <th className="px-4 py-4 xl:px-6 text-left text-[11px] font-bold uppercase tracking-wider text-on-surface-variant">
                 Couple
               </th>
-              <th className="px-6 py-4 text-left text-[11px] font-bold uppercase tracking-wider text-on-surface-variant">
+              <th className="px-4 py-4 xl:px-6 text-left text-[11px] font-bold uppercase tracking-wider text-on-surface-variant">
                 Phase
               </th>
-              <th className="px-6 py-4 text-left text-[11px] font-bold uppercase tracking-wider text-on-surface-variant">
+              <th className="px-4 py-4 xl:px-6 text-left text-[11px] font-bold uppercase tracking-wider text-on-surface-variant">
                 Ponte
               </th>
-              <th className="px-6 py-4 text-left text-[11px] font-bold uppercase tracking-wider text-on-surface-variant">
+              <th className="px-4 py-4 xl:px-6 text-left text-[11px] font-bold uppercase tracking-wider text-on-surface-variant">
                 Œufs
               </th>
-              <th className="px-6 py-4 text-left text-[11px] font-bold uppercase tracking-wider text-on-surface-variant">
+              <th className="px-4 py-4 xl:px-6 text-left text-[11px] font-bold uppercase tracking-wider text-on-surface-variant">
                 Jeunes
               </th>
-              <th className="px-6 py-4 text-right text-[11px] font-bold uppercase tracking-wider text-on-surface-variant">
+              <th className="px-4 py-4 xl:px-6 text-right text-[11px] font-bold uppercase tracking-wider text-on-surface-variant">
                 Fiche
               </th>
             </tr>
@@ -257,7 +258,7 @@ export default function ReproductionsContent() {
               return (
                 <tr key={repro.id} className="group transition-colors hover:bg-[#f5faf8]">
                   {/* Couple : mini-scène de nid + matricules */}
-                  <td className="px-6 py-4">
+                  <td className="px-4 py-4 xl:px-6">
                     <Link href={`/reproductions/${repro.id}`} className="flex items-center gap-4">
                       <OeufsPonte
                         phase={info.phase}
@@ -265,13 +266,13 @@ export default function ReproductionsContent() {
                         nombreEclos={repro.nombre_eclos}
                         className="h-12 w-24 shrink-0"
                       />
-                      <span className="font-mono text-[13.5px] font-bold text-on-surface">
+                      <span className="whitespace-nowrap font-mono text-[13.5px] font-bold text-on-surface">
                         {libelleCouple(repro)}
                       </span>
                     </Link>
                   </td>
                   {/* Phase : badge + point pulsant pour les nids « vivants » */}
-                  <td className="px-6 py-4">
+                  <td className="px-4 py-4 xl:px-6">
                     <Badge className={cn('gap-1.5 whitespace-nowrap rounded-full font-semibold', CHIP_PHASE[info.phase])}>
                       {pulse && (
                         <span className={cn('h-1.5 w-1.5 animate-pulse rounded-full', pulse)} aria-hidden="true" />
@@ -280,7 +281,7 @@ export default function ReproductionsContent() {
                     </Badge>
                   </td>
                   {/* Ponte */}
-                  <td className="px-6 py-4">
+                  <td className="px-4 py-4 xl:px-6">
                     <p className="flex items-center gap-1.5 text-[13px] font-semibold text-on-surface">
                       <CalendarDays className="h-3.5 w-3.5 text-[#00685f]" />
                       {formatDateLong(repro.date_ponte)}
@@ -290,7 +291,7 @@ export default function ReproductionsContent() {
                     </p>
                   </td>
                   {/* Œufs / éclos */}
-                  <td className="px-6 py-4">
+                  <td className="px-4 py-4 xl:px-6">
                     <span className="flex items-center gap-1.5 text-[13px] font-semibold text-on-surface">
                       <OeufPuce className="h-4 w-3" />
                       {repro.nombre_oeufs}
@@ -302,13 +303,13 @@ export default function ReproductionsContent() {
                     </span>
                   </td>
                   {/* Jeunes */}
-                  <td className="px-6 py-4">
+                  <td className="px-4 py-4 xl:px-6">
                     <span className="flex items-center gap-1.5 text-[13px] font-semibold text-on-surface">
                       <Baby className="h-4 w-4 text-[#00685f]" />
                       {repro.nombre_jeunes > 0 ? repro.nombre_jeunes : '--'}
                     </span>
                   </td>
-                  <td className="px-6 py-4 text-right">
+                  <td className="px-4 py-4 xl:px-6 text-right">
                     <Link href={`/reproductions/${repro.id}`}>
                       <span className="inline-flex h-9 w-9 items-center justify-center rounded-full text-on-surface-variant transition-colors group-hover:bg-[#00685f] group-hover:text-white">
                         <ChevronRight className="h-4 w-4" />
@@ -320,11 +321,12 @@ export default function ReproductionsContent() {
             })}
           </tbody>
         </table>
+        </div>
         )}
       </div>
 
       {/* ══ Vue mobile : cartes empilées ══ */}
-      <div className="space-y-3 md:hidden">
+      <div className="space-y-3 lg:hidden">
         {filtresActifs.map((repro) => {
           const info = phasesParId.get(repro.id) as InfoPhase
           const pulse = PULSE_PHASE[info.phase]
@@ -334,15 +336,15 @@ export default function ReproductionsContent() {
               href={`/reproductions/${repro.id}`}
               className="block rounded-3xl border border-outline-variant bg-surface-container-lowest p-4 transition-all active:scale-[0.99]"
             >
-              <div className="flex items-center gap-3">
+              <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
                 <OeufsPonte
                   phase={info.phase}
                   nombreOeufs={repro.nombre_oeufs}
                   nombreEclos={repro.nombre_eclos}
                   className="h-11 w-24 shrink-0"
                 />
-                <div className="min-w-0 flex-1">
-                  <p className="truncate font-mono text-[13px] font-bold text-on-surface">
+                <div className="min-w-[150px] flex-1">
+                  <p className="break-words font-mono text-[13px] font-bold text-on-surface">
                     {libelleCouple(repro)}
                   </p>
                   <p className="mt-0.5 flex items-center gap-1 text-[12px] text-on-surface-variant">
@@ -354,7 +356,7 @@ export default function ReproductionsContent() {
                   {info.label}
                 </Badge>
               </div>
-              <div className="mt-3 flex items-center gap-4 border-t border-outline-variant pt-2.5 text-[12.5px] text-on-surface-variant">
+              <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-1 border-t border-outline-variant pt-2.5 text-[12.5px] text-on-surface-variant">
                 <span className="flex items-center gap-1.5">
                   <OeufPuce className="h-3.5 w-2.5" />
                   {repro.nombre_oeufs} œuf{repro.nombre_oeufs > 1 ? 's' : ''}
