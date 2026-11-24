@@ -228,7 +228,7 @@ export default function ReproductionsContent() {
           <EtatVide filtreActif={filtrePhase !== 'tous' || !!coupleFilter} />
         ) : (
         <div className="overflow-x-auto">
-        <table className="w-full min-w-[640px]">
+        <table className="w-full min-w-[880px]">
           <thead>
             <tr className="border-b border-outline-variant bg-surface-container">
               <th className="px-4 py-4 xl:px-6 text-left text-[11px] font-bold uppercase tracking-wider text-on-surface-variant">
@@ -282,17 +282,17 @@ export default function ReproductionsContent() {
                   </td>
                   {/* Ponte */}
                   <td className="px-4 py-4 xl:px-6">
-                    <p className="flex items-center gap-1.5 text-[13px] font-semibold text-on-surface">
+                    <p className="flex items-center gap-1.5 whitespace-nowrap text-[13px] font-semibold text-on-surface">
                       <CalendarDays className="h-3.5 w-3.5 text-[#00685f]" />
                       {formatDateLong(repro.date_ponte)}
                     </p>
-                    <p className="mt-0.5 text-[11.5px] text-on-surface-variant">
+                    <p className="mt-0.5 whitespace-nowrap text-[11.5px] text-on-surface-variant">
                       il y a {info.joursDepuisPonte} jour{info.joursDepuisPonte > 1 ? 's' : ''}
                     </p>
                   </td>
                   {/* Œufs / éclos */}
                   <td className="px-4 py-4 xl:px-6">
-                    <span className="flex items-center gap-1.5 text-[13px] font-semibold text-on-surface">
+                    <span className="flex items-center gap-1.5 whitespace-nowrap text-[13px] font-semibold text-on-surface">
                       <OeufPuce className="h-4 w-3" />
                       {repro.nombre_oeufs}
                       {repro.nombre_eclos != null && (
@@ -304,7 +304,7 @@ export default function ReproductionsContent() {
                   </td>
                   {/* Jeunes */}
                   <td className="px-4 py-4 xl:px-6">
-                    <span className="flex items-center gap-1.5 text-[13px] font-semibold text-on-surface">
+                    <span className="flex items-center gap-1.5 whitespace-nowrap text-[13px] font-semibold text-on-surface">
                       <Baby className="h-4 w-4 text-[#00685f]" />
                       {repro.nombre_jeunes > 0 ? repro.nombre_jeunes : '--'}
                     </span>
