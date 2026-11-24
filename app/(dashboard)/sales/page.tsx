@@ -1,18 +1,4 @@
 'use client'
-
-// ─────────────────────────────────────────────────────────────────────────────
-// app/(dashboard)/sales/page.tsx — LE REGISTRE DES DÉPARTS, design
-// ultra-moderne réaliste cohérent avec le registre des cycles : chaque ligne
-// porte une MINI-SCÈNE DE DÉPART (envol vers un nouveau colombier = vente,
-// trajectoire qui s'effrite = perte, plume et bague restées au sol = décès).
-// Bandeau de statistiques RÉELLEMENT calculées (les tendances « +12% ce mois »
-// de l'ancienne version étaient codées en dur), filtres segmentés par type
-// avec compteurs, vraies photos des pigeons, menu d'actions câblé (l'ancien
-// bouton MoreVertical était inerte) avec suppression confirmée.
-// Logique métier inchangée : useSorties (garde DRF), pagination locale 10/page,
-// navigation vers /sales/new et /pigeons/{id}.
-// ─────────────────────────────────────────────────────────────────────────────
-
 import { useMemo, useState } from 'react'
 import Link from 'next/link'
 import { useDeleteSortie, useSorties } from '@/hooks/use-sales'
@@ -171,7 +157,7 @@ export default function SortiesPage() {
     <div className="max-w-6xl space-y-6">
       {/* ── En-tête ── */}
       <div className="flex flex-wrap items-center justify-between gap-4">
-        <div className="flex items-center gap-3">
+        <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
           <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-gradient-to-br from-[#00685f] to-[#01352f] text-white shadow-md shadow-teal-900/25">
             <PlaneTakeoff className="h-5 w-5" />
           </span>
@@ -194,7 +180,7 @@ export default function SortiesPage() {
       </div>
 
       {/* ── Statistiques réelles : les quatre destinées ── */}
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <CarteStat scene={<SceneVenteThumb />} label="Ventes" valeur={stats.ventes} mois={stats.ventesMois} />
         <CarteStat
           recettes={stats.recettes}
@@ -206,7 +192,7 @@ export default function SortiesPage() {
       </div>
 
       {/* ── Filtres segmentés par type ── */}
-      <div className="flex items-center gap-1 self-start rounded-2xl border border-outline-variant bg-surface-container p-1">
+      <div className="flex flex-wrap items-center gap-1 self-start rounded-2xl border border-outline-variant bg-surface-container p-1">
         {FILTRES.map((f) => (
           <button
             key={f.valeur}
@@ -216,7 +202,7 @@ export default function SortiesPage() {
               setPageActuelle(1)
             }}
             className={cn(
-              'flex items-center gap-1.5 rounded-xl px-3 py-1.5 text-[13px] font-semibold transition-all',
+              'flex items-center gap-1.5 whitespace-nowrap rounded-xl px-3 py-1.5 text-[13px] font-semibold transition-all',
               filtreType === f.valeur
                 ? 'bg-[#00685f] text-white shadow-sm shadow-teal-900/20'
                 : 'text-on-surface-variant hover:text-on-surface',
@@ -238,27 +224,28 @@ export default function SortiesPage() {
       </div>
 
       {/* ══ Vue desktop : tableau des départs ══ */}
-      <div className="hidden overflow-hidden rounded-3xl border border-outline-variant bg-surface-container-lowest md:block">
+      <div className="hidden overflow-hidden rounded-3xl border border-outline-variant bg-surface-container-lowest lg:block">
         {sortiesFiltrees.length === 0 ? (
           <EtatVide filtreActif={filtreType !== 'tous'} />
         ) : (
           <>
-            <table className="w-full">
+            <div className="overflow-x-auto">
+            <table className="w-full min-w-[640px]">
               <thead>
                 <tr className="border-b border-outline-variant bg-surface-container">
-                  <th className="px-6 py-4 text-left text-[11px] font-bold uppercase tracking-wider text-on-surface-variant">
+                  <th className="px-4 py-4 xl:px-6 text-left text-[11px] font-bold uppercase tracking-wider text-on-surface-variant">
                     Pigeon
                   </th>
-                  <th className="px-6 py-4 text-left text-[11px] font-bold uppercase tracking-wider text-on-surface-variant">
+                  <th className="px-4 py-4 xl:px-6 text-left text-[11px] font-bold uppercase tracking-wider text-on-surface-variant">
                     Départ
                   </th>
-                  <th className="px-6 py-4 text-left text-[11px] font-bold uppercase tracking-wider text-on-surface-variant">
+                  <th className="px-4 py-4 xl:px-6 text-left text-[11px] font-bold uppercase tracking-wider text-on-surface-variant">
                     Date
                   </th>
-                  <th className="px-6 py-4 text-left text-[11px] font-bold uppercase tracking-wider text-on-surface-variant">
+                  <th className="px-4 py-4 xl:px-6 text-left text-[11px] font-bold uppercase tracking-wider text-on-surface-variant">
                     Détails
                   </th>
-                  <th className="px-6 py-4 text-right text-[11px] font-bold uppercase tracking-wider text-on-surface-variant">
+                  <th className="px-4 py-4 xl:px-6 text-right text-[11px] font-bold uppercase tracking-wider text-on-surface-variant">
                     Actions
                   </th>
                 </tr>
@@ -269,7 +256,7 @@ export default function SortiesPage() {
                   return (
                     <tr key={sortie.id} className="group transition-colors hover:bg-[#f5faf8]">
                       {/* Pigeon : vraie photo + matricule cliquable */}
-                      <td className="px-6 py-4">
+                      <td className="px-4 py-4 xl:px-6">
                         <Link href={`/pigeons/${sortie.pigeon}`} className="flex items-center gap-3">
                           {/* eslint-disable-next-line @next/next/no-img-element */}
                           <img
@@ -279,7 +266,7 @@ export default function SortiesPage() {
                             style={{ filter: 'drop-shadow(0 3px 5px rgba(10,40,35,0.15))' }}
                           />
                           <span>
-                            <span className="block font-mono text-[13.5px] font-bold text-on-surface group-hover:text-[#00685f]">
+                            <span className="block whitespace-nowrap font-mono text-[13.5px] font-bold text-on-surface group-hover:text-[#00685f]">
                               {pigeon?.matricule ?? 'Inconnu'}
                             </span>
                             <span className="block text-[11.5px] text-on-surface-variant">
@@ -289,8 +276,8 @@ export default function SortiesPage() {
                         </Link>
                       </td>
                       {/* Type : mini-scène + badge */}
-                      <td className="px-6 py-4">
-                        <div className="flex items-center gap-3">
+                      <td className="px-4 py-4 xl:px-6">
+                        <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
                           <SceneSortie type={sortie.type_sortie} className="h-11 w-20 shrink-0" />
                           <Badge className={cn('gap-1.5 whitespace-nowrap rounded-full font-semibold', CHIP_TYPE[sortie.type_sortie])}>
                             {ICONE_TYPE[sortie.type_sortie]}
@@ -299,14 +286,14 @@ export default function SortiesPage() {
                         </div>
                       </td>
                       {/* Date */}
-                      <td className="px-6 py-4">
+                      <td className="px-4 py-4 xl:px-6">
                         <p className="text-[13px] font-semibold text-on-surface">
                           {formatDateLong(sortie.date_sortie)}
                         </p>
                         <p className="mt-0.5 text-[11.5px] text-on-surface-variant">{ilYa(sortie.date_sortie)}</p>
                       </td>
                       {/* Détails */}
-                      <td className="max-w-[240px] px-6 py-4">
+                      <td className="max-w-[240px] px-4 py-4 xl:px-6">
                         <p className="line-clamp-2 text-[12.5px] text-on-surface-variant">
                           {sortie.cause || sortie.circonstances || sortie.notes || 'Aucun détail'}
                         </p>
@@ -323,7 +310,7 @@ export default function SortiesPage() {
                         )}
                       </td>
                       {/* Actions : menu câblé (fiche pigeon + suppression) */}
-                      <td className="relative px-6 py-4 text-right">
+                      <td className="relative px-4 py-4 xl:px-6 text-right">
                         <button
                           type="button"
                           onClick={() => setMenuOuvert(menuOuvert === sortie.id ? null : sortie.id)}
@@ -363,10 +350,11 @@ export default function SortiesPage() {
                 })}
               </tbody>
             </table>
+            </div>
 
             {/* Pagination */}
             {totalPages > 1 && (
-              <div className="flex items-center justify-between border-t border-outline-variant px-6 py-4">
+              <div className="flex items-center justify-between border-t border-outline-variant px-4 py-4 xl:px-6">
                 <p className="text-[12.5px] text-on-surface-variant">
                   Affichage de {indexDebut + 1} à {Math.min(indexDebut + elementsParPage, totalElements)} sur{' '}
                   {totalElements} sorties
@@ -398,7 +386,7 @@ export default function SortiesPage() {
       </div>
 
       {/* ══ Vue mobile : cartes empilées ══ */}
-      <div className="space-y-3 md:hidden">
+      <div className="space-y-3 lg:hidden">
         {sortiesPagines.map((sortie) => {
           const pigeon = pigeonDe(sortie)
           return (
@@ -406,15 +394,15 @@ export default function SortiesPage() {
               key={sortie.id}
               className="rounded-3xl border border-outline-variant bg-surface-container-lowest p-4"
             >
-              <div className="flex items-center gap-3">
+              <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
                   src={getPigeonImage(sortie.pigeon, pigeon?.sexe ?? 'M')}
                   alt={pigeon?.matricule || 'Pigeon sorti'}
                   className="h-11 w-11 shrink-0 rounded-full object-cover ring-2 ring-[#d5eae5]"
                 />
-                <div className="min-w-0 flex-1">
-                  <Link href={`/pigeons/${sortie.pigeon}`} className="block truncate font-mono text-[13px] font-bold text-on-surface">
+                <div className="min-w-[150px] flex-1">
+                  <Link href={`/pigeons/${sortie.pigeon}`} className="block break-words font-mono text-[13px] font-bold text-on-surface">
                     {pigeon?.matricule ?? 'Inconnu'}
                   </Link>
                   <p className="mt-0.5 text-[11.5px] text-on-surface-variant">{formatDateLong(sortie.date_sortie)}</p>
@@ -424,7 +412,7 @@ export default function SortiesPage() {
                   {LIBELLE_TYPE[sortie.type_sortie]}
                 </Badge>
               </div>
-              <div className="mt-3 flex items-center gap-3 border-t border-outline-variant pt-3">
+              <div className="mt-3 flex flex-wrap items-center gap-x-3 gap-y-1 border-t border-outline-variant pt-3">
                 <SceneSortie type={sortie.type_sortie} className="h-10 w-20 shrink-0" />
                 <div className="min-w-0 flex-1">
                   {sortie.prix ? (
