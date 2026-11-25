@@ -124,7 +124,7 @@ export default function ReproductionsContent() {
   }
 
   return (
-    <div className="max-w-6xl space-y-6">
+    <div className="min-w-0 max-w-6xl space-y-6">
       {/* ── En-tête ── */}
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div className="flex items-center gap-3">
@@ -228,7 +228,7 @@ export default function ReproductionsContent() {
           <EtatVide filtreActif={filtrePhase !== 'tous' || !!coupleFilter} />
         ) : (
         <div className="overflow-x-auto">
-        <table className="w-full min-w-[880px]">
+        <table className="w-full">
           <thead>
             <tr className="border-b border-outline-variant bg-surface-container">
               <th className="px-4 py-4 xl:px-6 text-left text-[11px] font-bold uppercase tracking-wider text-on-surface-variant">
