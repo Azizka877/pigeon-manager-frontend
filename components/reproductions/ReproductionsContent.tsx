@@ -223,7 +223,7 @@ export default function ReproductionsContent() {
       </div>
 
       {/* ══ Vue desktop : tableau des cycles ══ */}
-      <div className="hidden overflow-hidden rounded-3xl border border-outline-variant bg-surface-container-lowest lg:block">
+      <div className="hidden overflow-x-auto rounded-3xl border border-outline-variant bg-surface-container-lowest lg:block">
         {filtresActifs.length === 0 ? (
           <EtatVide filtreActif={filtrePhase !== 'tous' || !!coupleFilter} />
         ) : (
