@@ -240,10 +240,10 @@ export default function ReproductionsContent() {
               <th className="px-4 py-4 xl:px-6 text-left text-[11px] font-bold uppercase tracking-wider text-on-surface-variant">
                 Ponte
               </th>
-              <th className="px-4 py-4 xl:px-6 text-left text-[11px] font-bold uppercase tracking-wider text-on-surface-variant">
+              <th className="hidden xl:table-cell px-4 py-4 xl:px-6 text-left text-[11px] font-bold uppercase tracking-wider text-on-surface-variant">
                 Œufs
               </th>
-              <th className="px-4 py-4 xl:px-6 text-left text-[11px] font-bold uppercase tracking-wider text-on-surface-variant">
+              <th className="hidden xl:table-cell px-4 py-4 xl:px-6 text-left text-[11px] font-bold uppercase tracking-wider text-on-surface-variant">
                 Jeunes
               </th>
               <th className="px-4 py-4 xl:px-6 text-right text-[11px] font-bold uppercase tracking-wider text-on-surface-variant">
@@ -266,7 +266,7 @@ export default function ReproductionsContent() {
                         nombreEclos={repro.nombre_eclos}
                         className="h-12 w-24 shrink-0"
                       />
-                      <span className="whitespace-nowrap font-mono text-[13.5px] font-bold text-on-surface">
+                      <span className="min-w-0 truncate font-mono text-[13.5px] font-bold text-on-surface">
                         {libelleCouple(repro)}
                       </span>
                     </Link>
@@ -291,7 +291,7 @@ export default function ReproductionsContent() {
                     </p>
                   </td>
                   {/* Œufs / éclos */}
-                  <td className="px-4 py-4 xl:px-6">
+                  <td className="hidden xl:table-cell px-4 py-4 xl:px-6">
                     <span className="flex items-center gap-1.5 whitespace-nowrap text-[13px] font-semibold text-on-surface">
                       <OeufPuce className="h-4 w-3" />
                       {repro.nombre_oeufs}
@@ -303,7 +303,7 @@ export default function ReproductionsContent() {
                     </span>
                   </td>
                   {/* Jeunes */}
-                  <td className="px-4 py-4 xl:px-6">
+                  <td className="hidden xl:table-cell px-4 py-4 xl:px-6">
                     <span className="flex items-center gap-1.5 whitespace-nowrap text-[13px] font-semibold text-on-surface">
                       <Baby className="h-4 w-4 text-[#00685f]" />
                       {repro.nombre_jeunes > 0 ? repro.nombre_jeunes : '--'}
