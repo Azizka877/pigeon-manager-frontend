@@ -180,7 +180,7 @@ export function Sidebar() {
         {sidebarOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
       </button>
 
-      <aside className="fixed left-0 top-0 z-30 hidden h-screen w-72 flex-col border-r border-outline-variant bg-surface-container-low md:flex">
+      <aside className="shrink-0 fixed left-0 top-0 z-30 hidden h-screen w-72 flex-col border-r border-outline-variant bg-surface-container-low md:flex">
         {navContent}
       </aside>
 

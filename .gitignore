@@ -36,3 +36,5 @@ Thumbs.db
 # Turbopack
 *.turbo
 tsconfig.tsbuildinfo
+.env.*
+!.env.example

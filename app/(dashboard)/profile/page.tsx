@@ -297,7 +297,7 @@ export default function ProfilePage() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="min-w-0 space-y-6">
       {/* ── En-tête ── */}
       <div className="flex items-center gap-3">
         <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-gradient-to-br from-[#00685f] to-[#01352f] text-white shadow-md shadow-teal-900/25">
@@ -387,8 +387,8 @@ export default function ProfilePage() {
       </div>
 
       {/* ── Contenu : 2/3 onglet actif + 1/3 compte & préférences ── */}
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
-        <div className="lg:col-span-2">
+      <div className="min-w-0 grid grid-cols-1 gap-6 lg:grid-cols-3">
+        <div className="min-w-0 lg:col-span-2">
           {/* ══ ONGLET PROFIL ══ */}
           {activeTab === 'profil' && (
             <Card className="rounded-3xl border-outline-variant p-6">
@@ -932,7 +932,7 @@ export default function ProfilePage() {
         </div>
 
         {/* ── Colonne latérale : notifications + compte ── */}
-        <div className="space-y-6">
+        <div className="min-w-0 space-y-6">
           <Card className="rounded-3xl border-outline-variant p-6">
             <div className="mb-4 flex items-center gap-2.5">
               <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-[#eef7f5] text-[#00685f]">
@@ -985,7 +985,7 @@ export default function ProfilePage() {
             <dl className="space-y-3 text-[13px]">
               <div className="flex items-center justify-between gap-3">
                 <dt className="text-on-surface-variant">Identifiant</dt>
-                <dd className="font-mono font-bold text-on-surface">@{user.username}</dd>
+                <dd className="min-w-0 truncate font-mono font-bold text-on-surface">@{user.username}</dd>
               </div>
               <hr className="border-outline-variant" />
               <div className="flex items-center justify-between gap-3">
